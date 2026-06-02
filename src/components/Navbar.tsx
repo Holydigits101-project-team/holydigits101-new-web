@@ -45,7 +45,7 @@ export default function Navbar() {
                 <img src="https://storage.lingoql.com/holydigits101/logo-main.png" ></img>
               </div>
             </div>
-            <div className="hidden ml-[-5px] md:block">
+            <div className="ml-[-5px] md:block">
               <span className="text-white font-['Orbitron'] text-xl font-bold tracking-wider">
                 HOLY<span className="text-yellow-400">DIGITS</span>101
               </span>

@@ -85,3 +85,7 @@ h1, h2, h3, h4, h5, h6 {
 .cinematic-overlay {
   background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(0,0,0,0.8) 100%);
 }
+
+.bg-black > section {
+  padding-top: 6rem;
+}
