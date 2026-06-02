@@ -41,11 +41,12 @@ export default function Navbar() {
           <Link to="/" className="flex items-center space-x-3 group">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
-              <div className="relative w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
-                <span className="text-black font-bold text-xl font-['Orbitron']">H</span>
+              <div className="relative w-12 h-12 rounded-full flex items-center justify-center">
+                {/* <span className="text-black font-bold text-xl font-['Orbitron']">H</span> */}
+                <img src="https://storage.lingoql.com/holydigits101/logo-main.png" ></img>
               </div>
             </div>
-            <div className="hidden md:block">
+            <div className="hidden ml-[-5px] md:block">
               <span className="text-white font-['Orbitron'] text-xl font-bold tracking-wider">
                 HOLY<span className="text-yellow-400">DIGITS</span>101
               </span>
