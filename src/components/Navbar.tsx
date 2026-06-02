@@ -42,7 +42,6 @@ export default function Navbar() {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
               <div className="relative w-12 h-12 rounded-full flex items-center justify-center">
-                {/* <span className="text-black font-bold text-xl font-['Orbitron']">H</span> */}
                 <img src="https://storage.lingoql.com/holydigits101/logo-main.png" ></img>
               </div>
             </div>
