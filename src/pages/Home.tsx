@@ -154,7 +154,7 @@ export default function Home() {
             className="mt-12 flex justify-center"
           >
             <motion.a
-              href="https://builders.holy101"
+              href="https://builders.holydigits101.com"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.1, y: -5 }}
@@ -283,7 +283,7 @@ export default function Home() {
                 title: 'Become an Entrepreneur',
                 description: 'Launch and scale Web3 education ventures with us.',
                 color: 'from-emerald-500 to-teal-600',
-                link: 'https://builders.holy101',
+                link: 'https://builders.holydigits101.com',
                 external: true,
                 featured: true,
                 image: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=2074&auto=format&fit=crop', // Modern office/entrepreneurship vibe

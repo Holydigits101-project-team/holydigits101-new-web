@@ -21,8 +21,8 @@
 ### New Call-to-Action Buttons
 1. **Explore the Movement** - Links to /about (existing, redesigned)
 2. **Partnership** - Links to /contact (existing, redesigned)
-3. **Become a Founder** ⭐ NEW - Links to https://builders.holy101 (purple gradient)
-4. **Become an Entrepreneur** ⭐ NEW - Links to https://builders.holy101 (emerald gradient)
+3. **Become a Founder** ⭐ NEW - Links to https://builders.holydigits101.com (purple gradient)
+4. **Become an Entrepreneur** ⭐ NEW - Links to https://builders.holydigits101.com (emerald gradient)
 
 ### New "Builders Program" Section
 - **6 Pathway Cards**:
@@ -153,7 +153,7 @@ src/
 7. **Footer**
 
 ## 🔗 External Links
-- **Builders Portal**: https://builders.holy101 (Founder & Entrepreneur paths)
+- **Builders Portal**: https://builders.holydigits101.com (Founder & Entrepreneur paths)
 - **Discord**: https://discord.gg/ZTK5f8be
 - **LinkedIn**: https://www.linkedin.com/company/holydigits101-global/
 - **Email**: horladoky1904@gmail.com

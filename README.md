@@ -20,8 +20,8 @@ This is a complete rebuild of the Holydigits101 website using modern web technol
 - **4 Call-to-Action Buttons**:
   - "Explore the Movement" → About page
   - "Partnership" → Contact page
-  - **"Become a Founder"** → https://builders.holy101 (NEW, Featured)
-  - **"Become an Entrepreneur"** → https://builders.holy101 (NEW, Featured)
+  - **"Become a Founder"** → https://builders.holydigits101.com (NEW, Featured)
+  - **"Become an Entrepreneur"** → https://builders.holydigits101.com (NEW, Featured)
 
 ### NEW: Builders Program Section
 A dedicated section showcasing 6 pathways to join the Web3 education movement:
@@ -124,7 +124,7 @@ holydigits101/
 
 ## 🔗 External Links
 
-- **Builders Portal**: [https://builders.holy101](https://builders.holy101)
+- **Builders Portal**: [https://builders.holydigits101.com](https://builders.holydigits101.com)
 - **Discord**: [https://discord.gg/ZTK5f8be](https://discord.gg/ZTK5f8be)
 - **LinkedIn**: [https://www.linkedin.com/company/holydigits101-global/](https://www.linkedin.com/company/holydigits101-global/)
 - **Email**: horladoky1904@gmail.com
