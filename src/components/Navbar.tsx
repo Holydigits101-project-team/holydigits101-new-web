@@ -19,9 +19,9 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
-    { name: 'Flagship Product', path: '/flagship' },
+    { name: 'Flagship Product', path: 'https://builders.holydigits101.com' },
     { name: 'Gallery', path: '/gallery' },
-    { name: 'Impact Hub', path: '/impact' },
+    { name: 'Impact Hub', path: 'https://holydigits-impact-hub.lingoql.com' },
     { name: 'Contact', path: '/contact' },
   ];
 
