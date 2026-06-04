@@ -346,14 +346,25 @@ export default function Scout() {
                       onChange={e => setFormData({...formData, countryCode: e.target.value})}
                       className="bg-white/5 border border-white/10 rounded-xl px-3 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700"
                     >
-                      <option value="+234">🇳🇬 +234</option>
-                      <option value="+1">🇺🇸 +1</option>
-                      <option value="+44">🇬🇧 +44</option>
-                      <option value="+233">🇬🇭 +233</option>
-                      <option value="+254">🇰🇪 +254</option>
-                      <option value="+27">🇿🇦 +27</option>
-                      <option value="+250">🇷🇼 +250</option>
-                      <option value="+256">🇺🇬 +256</option>
+                        <option value="+234">🇳🇬 +234</option>
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+233">🇬🇭 +233</option>
+                        <option value="+254">🇰🇪 +254</option>
+                        <option value="+91">🇮🇳 +91</option>
+                        <option value="+1-CA">🇨🇦 +1</option>
+                        <option value="+27">🇿🇦 +27</option>
+                        <option value="+256">🇺🇬 +256</option>
+                        <option value="+255">🇹🇿 +255</option>
+                        <option value="+251">🇪🇹 +251</option>
+                        <option value="+237">🇨🇲 +237</option>
+                        <option value="+225">🇨🇮 +225</option>
+                        <option value="+221">🇸🇳 +221</option>
+                        <option value="+49">🇩🇪 +49</option>
+                        <option value="+33">🇫🇷 +33</option>
+                        <option value="+971">🇦🇪 +971</option>
+                        <option value="+61">🇦🇺 +61</option>
+                        <option value="+55">🇧🇷 +55</option>
                     </select>
                     <input 
                       type="tel" 
@@ -378,13 +389,57 @@ export default function Scout() {
                       className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 ${errors.country ? 'border-red-500' : 'border-white/10'}`}
                     >
                       <option value="" className="text-gray-400">Select country...</option>
-                      <option value="NG">🇳🇬 Nigeria</option>
-                      <option value="GH">🇬🇭 Ghana</option>
-                      <option value="KE">🇰🇪 Kenya</option>
-                      <option value="ZA">🇿🇦 South Africa</option>
-                      <option value="RW">🇷🇼 Rwanda</option>
-                      <option value="UG">🇺🇬 Uganda</option>
-                      <option value="NG_OTHER">🌍 Other African Country</option>
+                        <option value="NG">🇳🇬 Nigeria</option>
+                        <option value="US">🇺🇸 United States</option>
+                        <option value="GB">🇬🇧 United Kingdom</option>
+                        <option value="GH">🇬🇭 Ghana</option>
+                        <option value="KE">🇰🇪 Kenya</option>
+                        <option value="IN">🇮🇳 India</option>
+                        <option value="CA">🇨🇦 Canada</option>
+                        <option value="ZA">🇿🇦 South Africa</option>
+                        <option value="UG">🇺🇬 Uganda</option>
+                        <option value="TZ">🇹🇿 Tanzania</option>
+                        <option value="ET">🇪🇹 Ethiopia</option>
+                        <option value="CM">🇨🇲 Cameroon</option>
+                        <option value="CI">🇨🇮 Côte d'Ivoire</option>
+                        <option value="SN">🇸🇳 Senegal</option>
+                        <option value="RW">🇷🇼 Rwanda</option>
+                        <option value="AU">🇦🇺 Australia</option>
+                        <option value="DE">🇩🇪 Germany</option>
+                        <option value="FR">🇫🇷 France</option>
+                        <option value="AE">🇦🇪 UAE</option>
+                        <option value="BR">🇧🇷 Brazil</option>
+                        <option value="PH">🇵🇭 Philippines</option>
+                        <option value="PK">🇵🇰 Pakistan</option>
+                        <option value="BD">🇧🇩 Bangladesh</option>
+                        <option value="LS">🇱🇸 Lesotho</option>
+                        <option value="ZM">🇿🇲 Zambia</option>
+                        <option value="ZW">🇿🇼 Zimbabwe</option>
+                        <option value="MW">🇲🇼 Malawi</option>
+                        <option value="MZ">🇲🇿 Mozambique</option>
+                        <option value="MG">🇲🇬 Madagascar</option>
+                        <option value="GN">🇬🇳 Guinea</option>
+                        <option value="ML">🇲🇱 Mali</option>
+                        <option value="NE">🇳🇪 Niger</option>
+                        <option value="BF">🇧🇫 Burkina Faso</option>
+                        <option value="TG">🇹🇬 Togo</option>
+                        <option value="BJ">🇧🇯 Benin</option>
+                        <option value="SO">🇸🇴 Somalia</option>
+                        <option value="SD">🇸🇩 Sudan</option>
+                        <option value="LY">🇱🇾 Libya</option>
+                        <option value="EG">🇪🇬 Egypt</option>
+                        <option value="MA">🇲🇦 Morocco</option>
+                        <option value="TN">🇹🇳 Tunisia</option>
+                        <option value="DZ">🇩🇿 Algeria</option>
+                        <option value="NL">🇳🇱 Netherlands</option>
+                        <option value="ES">🇪🇸 Spain</option>
+                        <option value="IT">🇮🇹 Italy</option>
+                        <option value="PT">🇵🇹 Portugal</option>
+                        <option value="IE">🇮🇪 Ireland</option>
+                        <option value="NZ">🇳🇿 New Zealand</option>
+                        <option value="SG">🇸🇬 Singapore</option>
+                        <option value="NG_OTHER">🌍 Other African Country</option>
+                        <option value="OTHER">🌐 Other</option>
                     </select>
                     {errors.country && (
                       <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Selection required</p>
@@ -735,7 +790,7 @@ export default function Scout() {
               className="bg-[#0a0f0d]/90 border border-yellow-500/20 rounded-3xl p-8 md:p-12 text-center shadow-2xl relative overflow-hidden max-w-lg mx-auto"
             >
               <div id="confettiContainer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
-              
+
               {/* Pulsing Success Ring Icon */}
               <div className="flex justify-center mb-6">
                 <div className="w-24 h-24 rounded-full border-4 border-green-600 flex items-center justify-center relative shadow-[0_0_30px_rgba(21,128,61,0.3)] bg-green-950/20">
