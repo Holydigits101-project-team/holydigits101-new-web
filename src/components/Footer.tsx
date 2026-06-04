@@ -33,12 +33,11 @@ export default function Footer() {
             <Link to="/" className="flex items-center space-x-3 mb-6 group">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                <div className="relative w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
-                  <span className="text-black font-bold text-xl font-['Orbitron']">H</span>
-                </div>
+                
               </div>
               <div className="relative w-12 h-12 rounded-full flex items-center justify-center">
                 <img src="https://storage.lingoql.com/holydigits101/logo-main.png" ></img>
+                <span>HolyDigits101</span>
               </div>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">
