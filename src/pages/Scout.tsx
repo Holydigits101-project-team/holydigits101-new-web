@@ -46,6 +46,10 @@ interface FormErrors {
   contactRole?: boolean;
   schoolAddress?: boolean;
   estimatedStudents?: boolean;
+  schoolKnowledge?: boolean;
+  contactPersonName?: boolean;
+  contactPhone?: boolean;
+  contactEmail?: boolean;
 }
 
 export default function Scout() {
@@ -63,10 +67,14 @@ export default function Scout() {
     address: '',
     consent: false,
     schoolName: '',
+    contactPersonName: '',
+    contactPhone: '',
+    contactEmail: '',
     schoolType: '',
     contactRole: '',
     schoolAddress: '',
     estimatedStudents: '',
+    schoolKnowledge: '',
     notes: ''
   });
 
@@ -119,6 +127,10 @@ export default function Scout() {
     if (!formData.contactRole) newErrors.contactRole = true;
     if (formData.schoolAddress.trim().length < 8) newErrors.schoolAddress = true;
     if (!formData.estimatedStudents) newErrors.estimatedStudents = true;
+    if (!formData.schoolKnowledge) newErrors.schoolKnowledge = true;
+    if (!formData.contactPersonName) newErrors.contactPersonName = true;
+    if (!formData.contactEmail) newErrors.contactEmail = true;
+    if (!formData.contactPhone) newErrors.contactPhone = true;
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length === 0) {
@@ -138,10 +150,14 @@ export default function Scout() {
       address: '',
       consent: false,
       schoolName: '',
+      contactPersonName: '',
+      contactPhone: '',
+      contactEmail: '',
       schoolType: '',
       contactRole: '',
       schoolAddress: '',
       estimatedStudents: '',
+      schoolKnowledge: '',
       notes: ''
     });
     setErrors({});
@@ -388,7 +404,7 @@ export default function Scout() {
                       onChange={e => setFormData({...formData, consent: e.target.checked})}
                       className="sr-only"
                     />
-                    <div className={`w-5 h-5 rounded border flex items-center justify-center mt-0.5 transition-all ${
+                    <div className={`w-[52px!important] h-[20px!important] rounded border flex items-center justify-center mt-0.5 transition-all ${
                       formData.consent ? 'bg-gradient-to-br from-green-700 to-green-600 border-green-600 text-white' : 'border-white/20 bg-white/5 group-hover:border-white/40'
                     }`}>
                       {formData.consent && <Check size={12} strokeWidth={4} className="w-[20px!important] h-[20px!important]"/>}
@@ -434,8 +450,10 @@ export default function Scout() {
               <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/5">
                 <div className="flex items-center gap-2">
                   <Building className="text-yellow-500" size={20} />
-                  <h2 className="text-xl font-bold font-['Sora'] text-white">School Recommendation Data</h2>
-                  <p class="text-white/40 text-xs">Tell us about the school you're recommending</p>
+                  <div>
+                    <h2 className="text-xl font-bold font-['Sora'] text-white">School Recommendation Data</h2>
+                    <p class="text-white/40 text-xs">Tell us about the school you're recommending</p>
+                  </div>
                 </div>
                 <button 
                   onClick={() => setStep(1)}
@@ -505,23 +523,117 @@ export default function Scout() {
                 </div>
 
                 {/* School Size Category */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Estimated Student Count *</label>
+                        <select
+                            value={formData.estimatedStudents}
+                            onChange={e => setFormData({...formData, estimatedStudents: e.target.value})}
+                            className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700 ${errors.estimatedStudents ? 'border-red-500' : 'border-white/10'}`}
+                        >
+                            <option value="">Select population range...</option>
+                            <option value="under_100">Fewer than 100 students</option>
+                            <option value="100_300">100 – 300 students</option>
+                            <option value="300_800">300 – 800 students</option>
+                            <option value="above_800">More than 800 students</option>
+                        </select>
+                        {errors.estimatedStudents && (
+                            <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Range assignment required</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">How Do You Know This School? *</label>
+                        <select
+                            value={formData.schoolKnowledge}
+                            onChange={e => setFormData({...formData, schoolKnowledge: e.target.value})}
+                            className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700 ${errors.schoolKnowledge ? 'border-red-500' : 'border-white/10'}`}
+                        >
+                            <option value="">Select relationship...</option>
+                            <option value="Alumni">I'm an alumni</option>
+                            <option value="Parent">My child attends</option>
+                            <option value="Staff">I work there</option>
+                            <option value="Neighbor">I live nearby</option>
+                            <option value="Friend">Friend/Family attends</option>
+                            <option value="Community">Community member</option>
+                            <option value="Research">Found via research</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        {errors.schoolKnowledge && (
+                            <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Range assignment required</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Separation Bar Label Graphic */}
+                <div className="flex items-center gap-3 py-2">
+                  <div className="flex-1 h-px bg-white/5" />
+                  <span className="text-white/25 text-[10px] uppercase font-bold tracking-widest">School Contact Person</span>
+                  <div className="flex-1 h-px bg-white/5" />
+                </div>
+
+                {/* Contact Person Full Name */}
                 <div>
-                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Estimated Student Count *</label>
-                  <select
-                    value={formData.estimatedStudents}
-                    onChange={e => setFormData({...formData, estimatedStudents: e.target.value})}
-                    className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700 ${errors.estimatedStudents ? 'border-red-500' : 'border-white/10'}`}
-                  >
-                    <option value="">Select population range...</option>
-                    <option value="under_100">Fewer than 100 students</option>
-                    <option value="100_300">100 – 300 students</option>
-                    <option value="300_800">300 – 800 students</option>
-                    <option value="above_800">More than 800 students</option>
-                  </select>
-                  {errors.estimatedStudents && (
-                    <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Range assignment required</p>
+                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Contact Full Name *</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. Amara Okafor"
+                    value={formData.contactPersonName}
+                    onChange={e => setFormData({...formData, contactPersonName: e.target.value})}
+                    className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 focus:bg-green-950/10 ${errors.contactPersonName ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
+                  />
+                  {errors.contactPersonName && (
+                    <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Please enter the contact person full name (at least 2 words)</p>
                   )}
                 </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Contact Email *</label>
+                  <input 
+                    type="email" 
+                    placeholder="e.g. amara@example.com"
+                    value={formData.contactEmail}
+                    onChange={e => setFormData({...formData, contactEmail: e.target.value})}
+                    className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 focus:bg-green-950/10 ${errors.contactEmail ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
+                  />
+                  {errors.contactEmail && (
+                    <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Please enter a valid email address</p>
+                  )}
+                </div>
+
+                {/* Phone Number */}
+                <div>
+                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Contact Phone *</label>
+                  <div className="flex gap-2">
+                    <select 
+                      value={formData.countryCode} 
+                      onChange={e => setFormData({...formData, countryCode: e.target.value})}
+                      className="bg-white/5 border border-white/10 rounded-xl px-3 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700"
+                    >
+                      <option value="+234">🇳🇬 +234</option>
+                      <option value="+1">🇺🇸 +1</option>
+                      <option value="+44">🇬🇧 +44</option>
+                      <option value="+233">🇬🇭 +233</option>
+                      <option value="+254">🇰🇪 +254</option>
+                      <option value="+27">🇿🇦 +27</option>
+                      <option value="+250">🇷🇼 +250</option>
+                      <option value="+256">🇺🇬 +256</option>
+                    </select>
+                    <input 
+                      type="tel" 
+                      placeholder="8012345678"
+                      value={formData.contactPhone}
+                      onChange={e => setFormData({...formData, contactPhone: e.target.value})}
+                      className={`flex-1 bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 focus:bg-green-950/10 ${errors.contactPhone ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
+                    />
+                  </div>
+                  {errors.contactPhone && (
+                    <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Valid phone number required</p>
+                  )}
+                </div>
+
+
 
                 {/* Separation Bar Label Graphic */}
                 <div className="flex items-center gap-3 py-2">
