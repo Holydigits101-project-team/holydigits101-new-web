@@ -140,7 +140,9 @@ export default function Scout() {
     if (Object.keys(newErrors).length === 0) {
       setStep(3);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      launchConfetti();
+      setTimeout(() => {
+        launchConfetti();
+      }, 500);
     }
   };
 
@@ -782,6 +784,7 @@ export default function Scout() {
           )}
 
           {/* STEP 3: SUCCESS APPLICATION RECEIVED */}
+          <div id="confettiContainer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
           {step === 3 && (
             <motion.div
               key="step3"
@@ -789,7 +792,6 @@ export default function Scout() {
               animate={{ scale: 1, opacity: 1 }}
               className="bg-[#0a0f0d]/90 border border-yellow-500/20 rounded-3xl p-8 md:p-12 text-center shadow-2xl relative overflow-hidden max-w-lg mx-auto"
             >
-              <div id="confettiContainer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
 
               {/* Pulsing Success Ring Icon */}
               <div className="flex justify-center mb-6">
