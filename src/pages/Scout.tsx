@@ -391,10 +391,12 @@ export default function Scout() {
                     <div className={`w-5 h-5 rounded border flex items-center justify-center mt-0.5 transition-all ${
                       formData.consent ? 'bg-gradient-to-br from-green-700 to-green-600 border-green-600 text-white' : 'border-white/20 bg-white/5 group-hover:border-white/40'
                     }`}>
-                      {formData.consent && <Check size={12} strokeWidth={4} />}
+                      {formData.consent && <Check size={12} strokeWidth={4} className="w-[20px!important] h-[20px!important]"/>}
                     </div>
                     <span className="text-xs text-gray-400 leading-relaxed">
-                      I agree that HolyDigits101 may securely collect, process, and retain the information provided on this multi-step profile under standard data privacy conditions.
+                        I consent to HolyDigits101 collecting and processing my personal data in accordance with the 
+                        <a href="/privacy-policy">Privacy Policy</a>. 
+                        My data will be used solely for the volunteer scout programme and will not be shared with third parties without my explicit consent.
                     </span>
                   </label>
                   {errors.consent && (
@@ -408,7 +410,7 @@ export default function Scout() {
                 <button
                   type="button"
                   onClick={validateStep1}
-                  className="w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl py-4 flex items-center justify-center gap-2 shadow-lg shadow-green-900/40 transform transition hover:-translate-y-0.5 active:translate-y-0"
+                  className="cursor-pointer w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl py-4 flex items-center justify-center gap-2 shadow-lg shadow-green-900/40 transform transition hover:-translate-y-0.5 active:translate-y-0"
                 >
                   <span>Continue to School Information</span>
                   <ArrowRight size={18} />
@@ -431,8 +433,9 @@ export default function Scout() {
             >
               <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/5">
                 <div className="flex items-center gap-2">
-                  <MapPin className="text-yellow-500" size={20} />
+                  <Building className="text-yellow-500" size={20} />
                   <h2 className="text-xl font-bold font-['Sora'] text-white">School Recommendation Data</h2>
+                  <p class="text-white/40 text-xs">Tell us about the school you're recommending</p>
                 </div>
                 <button 
                   onClick={() => setStep(1)}
@@ -463,7 +466,7 @@ export default function Scout() {
                 {/* School Type & Contact Role Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">School Class Type *</label>
+                    <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">School Type *</label>
                     <select
                       value={formData.schoolType}
                       onChange={e => setFormData({...formData, schoolType: e.target.value})}
@@ -569,7 +572,7 @@ export default function Scout() {
                 <button
                   type="button"
                   onClick={validateStep2}
-                  className="w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl py-4 flex items-center justify-center gap-2 shadow-lg shadow-green-900/40 transform transition hover:-translate-y-0.5"
+                  className="cursor-pointer w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl py-4 flex items-center justify-center gap-2 shadow-lg shadow-green-900/40 transform transition hover:-translate-y-0.5"
                 >
                   <span>Submit Scout Registration</span>
                   <CheckCircle2 size={18} />
@@ -644,7 +647,7 @@ export default function Scout() {
               <button
                 type="button"
                 onClick={handleResetForm}
-                className="w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl py-3.5 flex items-center justify-center gap-2 transition transform hover:-translate-y-0.5 text-sm"
+                className="cursor-pointer w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl py-3.5 flex items-center justify-center gap-2 transition transform hover:-translate-y-0.5 text-sm"
               >
                 <PlusCircle size={16} />
                 <span>Recommend Another School</span>
