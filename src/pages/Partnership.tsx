@@ -9,6 +9,7 @@ import {
   FileText,
   Check,
 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -16,6 +17,211 @@ import Footer from '../components/Footer';
 export default function Partnership() {
   const [files, setFiles] = useState<File[]>([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // add this inside the component, before return()
+
+  const countries = useMemo(
+    () =>
+      [
+        'Afghanistan',
+        'Albania',
+        'Algeria',
+        'Andorra',
+        'Angola',
+        'Antigua and Barbuda',
+        'Argentina',
+        'Armenia',
+        'Australia',
+        'Austria',
+        'Azerbaijan',
+        'Bahamas',
+        'Bahrain',
+        'Bangladesh',
+        'Barbados',
+        'Belarus',
+        'Belgium',
+        'Belize',
+        'Benin',
+        'Bhutan',
+        'Bolivia',
+        'Bosnia and Herzegovina',
+        'Botswana',
+        'Brazil',
+        'Brunei',
+        'Bulgaria',
+        'Burkina Faso',
+        'Burundi',
+        'Cabo Verde',
+        'Cambodia',
+        'Cameroon',
+        'Canada',
+        'Central African Republic',
+        'Chad',
+        'Chile',
+        'China',
+        'Colombia',
+        'Comoros',
+        'Congo',
+        'Costa Rica',
+        'Croatia',
+        'Cuba',
+        'Cyprus',
+        'Czech Republic',
+        'Democratic Republic of the Congo',
+        'Denmark',
+        'Djibouti',
+        'Dominica',
+        'Dominican Republic',
+        'Ecuador',
+        'Egypt',
+        'El Salvador',
+        'Equatorial Guinea',
+        'Eritrea',
+        'Estonia',
+        'Eswatini',
+        'Ethiopia',
+        'Fiji',
+        'Finland',
+        'France',
+        'Gabon',
+        'Gambia',
+        'Georgia',
+        'Germany',
+        'Ghana',
+        'Greece',
+        'Grenada',
+        'Guatemala',
+        'Guinea',
+        'Guinea-Bissau',
+        'Guyana',
+        'Haiti',
+        'Honduras',
+        'Hungary',
+        'Iceland',
+        'India',
+        'Indonesia',
+        'Iran',
+        'Iraq',
+        'Ireland',
+        'Israel',
+        'Italy',
+        'Ivory Coast',
+        'Jamaica',
+        'Japan',
+        'Jordan',
+        'Kazakhstan',
+        'Kenya',
+        'Kiribati',
+        'Kuwait',
+        'Kyrgyzstan',
+        'Laos',
+        'Latvia',
+        'Lebanon',
+        'Lesotho',
+        'Liberia',
+        'Libya',
+        'Liechtenstein',
+        'Lithuania',
+        'Luxembourg',
+        'Madagascar',
+        'Malawi',
+        'Malaysia',
+        'Maldives',
+        'Mali',
+        'Malta',
+        'Marshall Islands',
+        'Mauritania',
+        'Mauritius',
+        'Mexico',
+        'Micronesia',
+        'Moldova',
+        'Monaco',
+        'Mongolia',
+        'Montenegro',
+        'Morocco',
+        'Mozambique',
+        'Myanmar',
+        'Namibia',
+        'Nauru',
+        'Nepal',
+        'Netherlands',
+        'New Zealand',
+        'Nicaragua',
+        'Niger',
+        'Nigeria',
+        'North Korea',
+        'North Macedonia',
+        'Norway',
+        'Oman',
+        'Pakistan',
+        'Palau',
+        'Palestine',
+        'Panama',
+        'Papua New Guinea',
+        'Paraguay',
+        'Peru',
+        'Philippines',
+        'Poland',
+        'Portugal',
+        'Qatar',
+        'Romania',
+        'Russia',
+        'Rwanda',
+        'Saint Kitts and Nevis',
+        'Saint Lucia',
+        'Saint Vincent and the Grenadines',
+        'Samoa',
+        'San Marino',
+        'Sao Tome and Principe',
+        'Saudi Arabia',
+        'Senegal',
+        'Serbia',
+        'Seychelles',
+        'Sierra Leone',
+        'Singapore',
+        'Slovakia',
+        'Slovenia',
+        'Solomon Islands',
+        'Somalia',
+        'South Africa',
+        'South Korea',
+        'South Sudan',
+        'Spain',
+        'Sri Lanka',
+        'Sudan',
+        'Suriname',
+        'Sweden',
+        'Switzerland',
+        'Syria',
+        'Taiwan',
+        'Tajikistan',
+        'Tanzania',
+        'Thailand',
+        'Timor-Leste',
+        'Togo',
+        'Tonga',
+        'Trinidad and Tobago',
+        'Tunisia',
+        'Turkey',
+        'Turkmenistan',
+        'Tuvalu',
+        'Uganda',
+        'Ukraine',
+        'United Arab Emirates',
+        'United Kingdom',
+        'United States',
+        'Uruguay',
+        'Uzbekistan',
+        'Vanuatu',
+        'Vatican City',
+        'Venezuela',
+        'Vietnam',
+        'Yemen',
+        'Zambia',
+        'Zimbabwe',
+      ].sort(),
+    []
+  );
 
   const partnershipTypes = [
     {
@@ -250,26 +456,39 @@ export default function Partnership() {
                     type="tel"
                     name="phone"
                     required
-                    placeholder="+234 ..."
+                    placeholder="+1 (555) 123-4567"
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400/50 focus:bg-white/10 transition-all duration-300"
                   />
                 </div>
               </div>
 
               {/* Country */}
-              <div>
+            <div>
                 <label className="block text-sm font-semibold text-gray-300 mb-2">
-                  Country <span className="text-yellow-400">*</span>
+                    Country <span className="text-yellow-400">*</span>
                 </label>
 
-                <input
-                  type="text"
-                  name="country"
-                  required
-                  placeholder="Enter your country"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400/50 focus:bg-white/10 transition-all duration-300"
-                />
-              </div>
+                <select
+                    name="country"
+                    required
+                    defaultValue=""
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-yellow-400/50 focus:bg-white/10 transition-all duration-300"
+                >
+                    <option value="" disabled className="bg-gray-900 text-gray-500">
+                    Select your country
+                    </option>
+
+                    {countries.map((country) => (
+                    <option
+                        key={country}
+                        value={country}
+                        className="bg-gray-900 text-white"
+                    >
+                        {country}
+                    </option>
+                    ))}
+                </select>
+            </div>
 
               {/* Partnership Type */}
               <div>
