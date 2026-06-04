@@ -728,13 +728,14 @@ export default function Scout() {
 
           {/* STEP 3: SUCCESS APPLICATION RECEIVED */}
           {step === 3 && (
-            <div id="confettiContainer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
             <motion.div
               key="step3"
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               className="bg-[#0a0f0d]/90 border border-yellow-500/20 rounded-3xl p-8 md:p-12 text-center shadow-2xl relative overflow-hidden max-w-lg mx-auto"
             >
+              <div id="confettiContainer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+              
               {/* Pulsing Success Ring Icon */}
               <div className="flex justify-center mb-6">
                 <div className="w-24 h-24 rounded-full border-4 border-green-600 flex items-center justify-center relative shadow-[0_0_30px_rgba(21,128,61,0.3)] bg-green-950/20">
