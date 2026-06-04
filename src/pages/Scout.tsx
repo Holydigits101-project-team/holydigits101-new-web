@@ -526,7 +526,7 @@ export default function Scout() {
                 {/* Separation Bar Label Graphic */}
                 <div className="flex items-center gap-3 py-2">
                   <div className="flex-1 h-px bg-white/5" />
-                  <span className="text-white/25 text-[10px] uppercase font-bold tracking-widest">Location Mapping</span>
+                  <span className="text-white/25 text-[10px] uppercase font-bold tracking-widest">Location Details</span>
                   <div className="flex-1 h-px bg-white/5" />
                 </div>
 

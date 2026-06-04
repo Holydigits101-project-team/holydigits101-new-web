@@ -276,7 +276,6 @@ export default function Home() {
                 description: 'Learn, build, and own your educational journey through Web3.',
                 color: 'from-blue-500 to-cyan-500',
                 // link: '/contact',
-                link: '#',
                 image: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2070&auto=format&fit=crop', // University students collaborating
               },
               {
@@ -285,7 +284,6 @@ export default function Home() {
                 description: 'Launch and scale Web3 education ventures with us.',
                 color: 'from-emerald-500 to-teal-600',
                 // link: 'https://builders.holydigits101.com',
-                link: '#',
                 external: true,
                 featured: true,
                 image: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=2074&auto=format&fit=crop', // Modern office/entrepreneurship vibe
@@ -296,7 +294,6 @@ export default function Home() {
                 description: 'Intensive digital skills training to prepare you for the global Web3 economy.',
                 color: 'from-pink-500 to-rose-500',
                 // link: '/contact',
-                link: '#',
                 image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop', // High quality bootcamp/tech learning image
               },
             ].map((pathway, index) => (
