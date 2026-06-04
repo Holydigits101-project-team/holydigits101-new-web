@@ -127,7 +127,7 @@ export default function Home() {
             className="flex flex-col sm:flex-row gap-6 justify-center items-center"
           >
             <motion.a
-              href="/about"
+              href="/scout"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="group px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold rounded-full text-lg flex items-center space-x-2 shadow-2xl shadow-yellow-500/50 hover:shadow-yellow-500/70 transition-all"
