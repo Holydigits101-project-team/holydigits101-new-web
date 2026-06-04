@@ -17,20 +17,24 @@ import Footer from '../components/Footer';
 
 // State-by-country mapping from the original configuration
 const STATE_DATA: Record<string, string[]> = {
-  NG: [
-    "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
-    "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT - Abuja", "Gombe",
-    "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos",
-    "Nasarawa", "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto",
-    "Taraba", "Yobe", "Zamfara"
-  ],
-  GH: ["Greater Accra", "Ashanti", "Western", "Eastern", "Central", "Northern", "Volta", "Upper East", "Upper West", "Bono"],
-  KE: ["Nairobi", "Mombasa", "Kiambu", "Nakuru", "Kisumu", "Uasin Gishu", "Machakos", "Nyeri", "Kajiado", "Kilifi"],
-  ZA: ["Gauteng", "Western Cape", "KwaZulu-Natal", "Eastern Cape", "Free State", "Limpopo", "Mpumalanga", "North West", "Northern Cape"],
-  RW: ["Kigali", "Eastern Province", "Northern Province", "Western Province", "Southern Province"],
-  UG: ["Central Region", "Western Region", "Eastern Region", "Northern Region"],
-  OTHER: ["State / Region 1", "State / Region 2", "Other Region"]
-};
+    NG: ["Abia","Adamawa","Akwa Ibom","Anambra","Bauchi","Bayelsa","Benue","Borno","Cross River","Delta","Ebonyi","Edo","Ekiti","Enugu","FCT – Abuja","Gombe","Imo","Jigawa","Kaduna","Kano","Katsina","Kebbi","Kogi","Kwara","Lagos","Nasarawa","Niger","Ogun","Ondo","Osun","Oyo","Plateau","Rivers","Sokoto","Taraba","Yobe","Zamfara"],
+    US: ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"],
+    GB: ["England – London","England – South East","England – North West","England – Yorkshire","England – Midlands","England – South West","England – East","Wales","Scotland","Northern Ireland"],
+    GH: ["Ashanti","Brong-Ahafo","Central","Eastern","Greater Accra","Northern","Upper East","Upper West","Volta","Western"],
+    KE: ["Nairobi","Coast","Central","Eastern","North Eastern","Nyanza","Rift Valley","Western","Mombasa County","Kisumu County","Nakuru County","Eldoret County"],
+    IN: ["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Delhi"],
+    CA: ["Alberta","British Columbia","Manitoba","New Brunswick","Newfoundland and Labrador","Nova Scotia","Ontario","Prince Edward Island","Quebec","Saskatchewan","Northwest Territories","Nunavut","Yukon"],
+    ZA: ["Eastern Cape","Free State","Gauteng","KwaZulu-Natal","Limpopo","Mpumalanga","North West","Northern Cape","Western Cape"],
+    UG: ["Central Region","Eastern Region","Northern Region","Western Region","Kampala Capital City"],
+    TZ: ["Arusha","Dar es Salaam","Dodoma","Geita","Iringa","Kagera","Katavi","Kigoma","Kilimanjaro","Lindi","Manyara","Mara","Mbeya","Mjini Magharibi","Morogoro","Mtwara","Mwanza","Njombe","Pemba North","Pemba South","Pwani","Rukwa","Ruvuma","Shinyanga","Simiyu","Singida","Tabora","Tanga","Zanzibar North","Zanzibar South"],
+    ET: ["Addis Ababa","Afar","Amhara","Benishangul-Gumuz","Dire Dawa","Gambela","Harari","Oromia","Sidama","Somali","Southern Nations","Tigray"],
+    CM: ["Adamawa","Centre","East","Far North","Littoral","North","North West","South","South West","West"],
+    AU: ["Australian Capital Territory","New South Wales","Northern Territory","Queensland","South Australia","Tasmania","Victoria","Western Australia"],
+    DE: ["Baden-Württemberg","Bavaria","Berlin","Brandenburg","Bremen","Hamburg","Hesse","Lower Saxony","Mecklenburg-Vorpommern","North Rhine-Westphalia","Rhineland-Palatinate","Saarland","Saxony","Saxony-Anhalt","Schleswig-Holstein","Thuringia"],
+    FR: ["Auvergne-Rhône-Alpes","Bourgogne-Franche-Comté","Brittany","Centre-Val de Loire","Corsica","Grand Est","Hauts-de-France","Île-de-France","Normandy","Nouvelle-Aquitaine","Occitanie","Pays de la Loire","Provence-Alpes-Côte d'Azur"],
+    OTHER: ["Please enter region in address field above"],
+    NG_OTHER: ["Please specify in address"],
+  };
 
 // Error interface for validation
 interface FormErrors {
@@ -136,8 +140,34 @@ export default function Scout() {
     if (Object.keys(newErrors).length === 0) {
       setStep(3);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      launchConfetti();
     }
   };
+
+  /* ─── Confetti ─── */
+  const launchConfetti = () => {
+    const container = document.getElementById('confettiContainer') as HTMLDivElement;
+    const colors = ['#EAB308','#15803d','#16a34a','#FDE047','#ffffff','#86efac'];
+    for (let i = 0; i < 60; i++) {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.className = 'confetti';
+        div.style.cssText = `
+          left: ${Math.random()*100}%;
+          top: ${-10 + Math.random()*10}%;
+          background: ${colors[Math.floor(Math.random()*colors.length)]};
+          width: ${6+Math.random()*8}px;
+          height: ${6+Math.random()*8}px;
+          animation-duration: ${2+Math.random()*3}s;
+          animation-delay: ${Math.random()*0.5}s;
+          border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+        `;
+        container.appendChild(div);
+        setTimeout(() => div.remove(), 4000);
+      }, i * 40);
+    }
+  }
+
 
   const handleResetForm = () => {
     setFormData({
@@ -698,6 +728,7 @@ export default function Scout() {
 
           {/* STEP 3: SUCCESS APPLICATION RECEIVED */}
           {step === 3 && (
+            <div id="confettiContainer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
             <motion.div
               key="step3"
               initial={{ scale: 0.95, opacity: 0 }}
@@ -716,12 +747,17 @@ export default function Scout() {
                 Scout Submission Complete!
               </h2>
               <p className="text-yellow-400 text-xs uppercase tracking-widest font-bold font-['Orbitron'] mb-6">
-                Thank you for powering African schools
+                Thank you for joining our mission to bridge the digital divide
               </p>
               
               <p className="text-gray-300 text-sm leading-relaxed mb-8 max-w-sm mx-auto">
-                Your recommendation for <span className="text-white font-semibold">"{formData.schoolName}"</span> has been registered into HolyDigits101 core database.
+                Your school recommendation for <span className="text-white font-semibold">"{formData.schoolName}"</span> has been received and our team will review it within <b>2–3 business days</b>.
               </p>
+
+              <div class="glass rounded-xl px-5 py-3 inline-block mb-6">
+                <p class="text-white/40 text-xs mb-1">Your Scout Reference Number</p>
+                <p id="refNumber" class="font-sora font-black text-lg text-yellow-400 tracking-widest">HD-SCOUT-B02L9-2026</p>
+              </div>
 
               {/* Steps Progress Checklist Summary Info */}
               <div className="bg-white/5 border border-white/5 rounded-2xl p-5 text-left space-y-4 mb-8">
@@ -732,7 +768,7 @@ export default function Scout() {
                     1
                   </div>
                   <p className="text-gray-400 text-xs leading-normal">
-                    Our compliance managers will audit the school’s details and location logs.
+                    Our team reviews your school recommendation and verifies the details provided.
                   </p>
                 </div>
 
@@ -741,7 +777,7 @@ export default function Scout() {
                     2
                   </div>
                   <p className="text-gray-400 text-xs leading-normal">
-                    You will receive an automated confirmation email accompanied by your distinctive Scout ID badge.
+                    You'll receive a confirmation email with your scout ID and onboarding materials.
                   </p>
                 </div>
 
@@ -750,7 +786,7 @@ export default function Scout() {
                     3
                   </div>
                   <p className="text-gray-400 text-xs leading-normal">
-                    HolyDigits101 field operators will reach out to the school board to initiate structural parameters setup.
+                    HolyDigits101 reaches out to the school to begin the digital literacy partnership.
                   </p>
                 </div>
               </div>
