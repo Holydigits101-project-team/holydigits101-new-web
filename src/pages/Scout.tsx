@@ -210,14 +210,14 @@ export default function Scout() {
         {/* Header Branding */}
         {step !== 3 && (
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-3">
+            {/* <div className="flex items-center justify-center gap-2 mb-3">
               <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.4)]">
                 <span className="text-black font-extrabold font-['Orbitron'] text-xl">H</span>
               </div>
               <span className="font-['Orbitron'] tracking-wider text-sm font-semibold uppercase text-yellow-500">
                 HolyDigits101
               </span>
-            </div>
+            </div> */}
             <h1 className="text-3xl md:text-4xl font-bold font-['Sora'] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-emerald-500">
               Volunteer Scout Portal
             </h1>
