@@ -275,7 +275,8 @@ export default function Home() {
                 title: 'Student Path',
                 description: 'Learn, build, and own your educational journey through Web3.',
                 color: 'from-blue-500 to-cyan-500',
-                link: '/contact',
+                // link: '/contact',
+                link: '#',
                 image: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2070&auto=format&fit=crop', // University students collaborating
               },
               {
@@ -283,7 +284,8 @@ export default function Home() {
                 title: 'Become an Entrepreneur',
                 description: 'Launch and scale Web3 education ventures with us.',
                 color: 'from-emerald-500 to-teal-600',
-                link: 'https://builders.holydigits101.com',
+                // link: 'https://builders.holydigits101.com',
+                link: '#',
                 external: true,
                 featured: true,
                 image: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=2074&auto=format&fit=crop', // Modern office/entrepreneurship vibe
@@ -293,7 +295,8 @@ export default function Home() {
                 title: 'Holydigits101 Online Bootcamp',
                 description: 'Intensive digital skills training to prepare you for the global Web3 economy.',
                 color: 'from-pink-500 to-rose-500',
-                link: '/contact',
+                // link: '/contact',
+                link: '#',
                 image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop', // High quality bootcamp/tech learning image
               },
             ].map((pathway, index) => (
@@ -333,10 +336,10 @@ export default function Home() {
                   <p className="text-gray-300 leading-relaxed mb-6 group-hover:text-white transition-colors">
                     {pathway.description}
                   </p>
-                  <div className="flex items-center text-yellow-400 font-semibold group-hover:translate-x-2 transition-transform">
+                  {/* <div className="flex items-center text-yellow-400 font-semibold group-hover:translate-x-2 transition-transform">
                     <span>Apply Now</span>
                     <ArrowRight className="ml-2" size={20} />
-                  </div>
+                  </div> */}
                 </div>
               </motion.a>
             ))}
