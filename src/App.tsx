@@ -7,6 +7,7 @@ import Contact from './pages/Contact';
 // import Gallery from './pages/Gallery';
 import ImpactHub from './pages/ImpactHub';
 import FlagshipProduct from './pages/FlagshipProduct';
+import Team from './pages/Team';
 import Leaders from './pages/LeadersPage';
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/partnership" element={<Partnership />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/leaders" element={<Leaders />} />
+        <Route path="/team" element={<Team />} />
         <Route path="/impact" element={<ImpactHub />} />
       </Routes>
     </Router>
