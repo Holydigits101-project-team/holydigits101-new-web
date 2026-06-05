@@ -4,7 +4,7 @@ import Partnership from './pages/Partnership';
 import Scout from './pages/Scout';
 import About from './pages/About';
 import Contact from './pages/Contact';
-import Gallery from './pages/Gallery';
+// import Gallery from './pages/Gallery';
 import ImpactHub from './pages/ImpactHub';
 import FlagshipProduct from './pages/FlagshipProduct';
 import Leaders from './pages/LeadersPage';
