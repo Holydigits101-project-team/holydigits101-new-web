@@ -7,15 +7,15 @@ export default function Footer() {
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
     { name: 'Gallery', path: '/gallery' },
-    { name: 'Blog', path: '/blog' },
+    { name: 'Impact Hub', path: '/https://holydigits-impact-hub.lingoql.com' },
     { name: 'Contact', path: '/contact' },
   ];
 
   const communityLinks = [
-    { name: 'Discord Server', url: 'https://discord.gg/ZTK5f8be' },
-    { name: 'Twitter/X', url: '#' },
+    { name: 'Discord Server', url: 'https://discord.gg/ZMxeWXUnS' },
+    { name: 'Twitter/X', url: 'https://x.com/holydigits101?s=21' },
     { name: 'LinkedIn', url: 'https://www.linkedin.com/company/holydigits101-global/' },
-    { name: 'YouTube', url: '#' },
+    { name: 'YouTube', url: 'https://youtube.com/@holydigits101?si=y5xQ4DTwzTrvAnh8' },
   ];
 
   return (
@@ -33,13 +33,12 @@ export default function Footer() {
             <Link to="/" className="flex items-center space-x-3 mb-6 group">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                <div className="relative w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
-                  <span className="text-black font-bold text-xl font-['Orbitron']">H</span>
-                </div>
+                
               </div>
-              <span className="text-white font-['Orbitron'] text-xl font-bold tracking-wider">
-                HOLY<span className="text-yellow-400">DIGITS</span>101
-              </span>
+              <div className="relative w-12 h-12 rounded-full flex items-center justify-center">
+                <img src="https://storage.lingoql.com/holydigits101/logo-main.png" ></img>
+                <span>HolyDigits101</span>
+              </div>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">
               Empowering individuals worldwide with the knowledge to navigate the digital economy with confidence and skill.
