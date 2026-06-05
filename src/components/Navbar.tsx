@@ -20,7 +20,7 @@ export default function Navbar() {
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
     { name: 'Flagship Product', path: 'https://builders.holydigits101.com' },
-    { name: 'Gallery', path: '/gallery' },
+    { name: 'Leaders', path: '/leaders' },
     { name: 'Impact Hub', path: 'https://holydigits-impact-hub.lingoql.com' },
     { name: 'Contact', path: '/contact' },
   ];

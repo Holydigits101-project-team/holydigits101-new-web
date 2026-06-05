@@ -7,6 +7,7 @@ import Contact from './pages/Contact';
 import Gallery from './pages/Gallery';
 import ImpactHub from './pages/ImpactHub';
 import FlagshipProduct from './pages/FlagshipProduct';
+import Leaders from './pages/LeadersPage';
 
 export default function App() {
   return (
@@ -18,7 +19,7 @@ export default function App() {
         <Route path="/scout" element={<Scout />} />
         <Route path="/partnership" element={<Partnership />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/gallery" element={<Gallery />} />
+        <Route path="/leaders" element={<Leaders />} />
         <Route path="/impact" element={<ImpactHub />} />
       </Routes>
     </Router>
