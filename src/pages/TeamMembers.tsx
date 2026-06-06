@@ -464,7 +464,11 @@ export default function TeamMembers() {
                         >
                           <span className="grid h-8 w-8 place-items-center rounded-full bg-[#F4B400]/14 text-[#fff3c4] transition group-hover:bg-[#F4B400]/26">
                             {member.social.label=='X'?
-                              <XIcon /> : <LinkedInIcon />
+                              <XIcon /> : 
+                              <div>
+                                <LinkedInIcon />
+                                LinkedIn Profile
+                              </div>
                             }
                           </span>
                           {member.social.display}
@@ -504,7 +508,7 @@ export default function TeamMembers() {
                   <img
                     src={advisor.image}
                     alt={advisor.name}
-                    className={`h-full w-full object-contain opacity-92 transition duration-700 group-hover:scale-105`}
+                    className={`h-full w-full object-cover opacity-92 transition duration-700 group-hover:scale-105`}
                     loading="lazy"
                   />
                 </div>
