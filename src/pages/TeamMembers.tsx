@@ -27,7 +27,6 @@ type Advisor = {
   bio: string;
   image: string;
   linkedin: string;
-  resizeImage?: boolean;
 };
 
 const heroImage =
@@ -180,7 +179,6 @@ const advisors: Advisor[] = [
     bio: "Provides strategic counsel for growth, global positioning, and responsible digital ecosystem building.",
     image:
       "https://storage.lingoql.com/holydigits101/grapov.jpg",
-    resizeImage: true,
     linkedin:
       "https://www.linkedin.com/in/alex-grapov-com?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app",
   },
@@ -190,7 +188,6 @@ const advisors: Advisor[] = [
     bio: "Advises on education, impact partnerships, and sustainable pathways for digital learning communities.",
     image:
       "https://storage.lingoql.com/holydigits101/virginia.jpg",
-    resizeImage: true,
     linkedin:
       "https://www.linkedin.com/in/virginia-schmidt-397684b5?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app",
   },
@@ -505,9 +502,7 @@ export default function TeamMembers() {
                   <img
                     src={advisor.image}
                     alt={advisor.name}
-                    className={`h-full w-full object-cover opacity-92 transition duration-700 group-hover:scale-105 ${
-                      advisor.resizeImage ? 'object-contain' : ''
-                    }`}
+                    className={`h-full w-full object-contain opacity-92 transition duration-700 group-hover:scale-105`}
                     loading="lazy"
                   />
                 </div>
