@@ -31,13 +31,12 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center space-x-3 mb-6 group">
-              <div className="relative">
+              {/* <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity"></div>
-                
-              </div>
-              <div className="relative w-12 h-12 rounded-full flex items-center justify-center">
+              </div> */}
+              <div className="ml-[5rem!important] relative w-12 h-12 rounded-full flex items-center justify-center">
                 <img src="https://storage.lingoql.com/holydigits101/logo-main.png" ></img>
-                <div class="ml-[-5px] md:block">
+                <div class="ml-[5px] md:block">
                   <span class="text-white font-['Orbitron'] text-xl font-bold tracking-wider">HOLY<span class="text-yellow-400">DIGITS</span>101</span>
                 </div>
               </div>

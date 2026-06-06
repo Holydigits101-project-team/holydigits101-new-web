@@ -66,7 +66,7 @@ const teamMembers: TeamMember[] = [
       display: "@emmyholy_",
     },
     image:
-      "https://lh3.googleusercontent.com/d/1pf_GnSo570903-tJBTK__5Bbo1hbvPdm",
+      "https://storage.lingoql.com/holydigits101/pendar.jpg",
     imageClass: "h-[430px]",
   },
   {
@@ -83,7 +83,7 @@ const teamMembers: TeamMember[] = [
       display: "@horladoky1904",
     },
     image:
-      "https://lh3.googleusercontent.com/d/1SDfVZWJsgtBQvfVNBb8cavPY5A3yYsUE",
+      "https://storage.lingoql.com/holydigits101/cofounder.PNG",
     imageClass: "h-[485px]",
   },
   {
@@ -95,7 +95,7 @@ const teamMembers: TeamMember[] = [
     fullBio:
       "Edu Confidence Edwin serves as CEO of HolyDigits101 Global, supporting the organization through executive leadership, growth coordination, and operational direction. His work helps align people, programs, reporting, and strategic delivery so the movement can scale with clarity, accountability, and global impact.",
     image:
-      "https://lh3.googleusercontent.com/d/1EA88N9fMZmCtqHlTbD9kImMD_5ThOhLh",
+      "https://storage.lingoql.com/holydigits101/confidence.PNG",
     imageClass: "h-[410px]",
   },
   {
@@ -178,7 +178,7 @@ const advisors: Advisor[] = [
     focus: "Advisory Board",
     bio: "Provides strategic counsel for growth, global positioning, and responsible digital ecosystem building.",
     image:
-      "https://lh3.googleusercontent.com/d/1jowQsUSkn-0155tPQKP2YYRzHgM-yaGl",
+      "https://storage.lingoql.com/holydigits101/grapov.jpg",
     linkedin:
       "https://www.linkedin.com/in/alex-grapov-com?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app",
   },
@@ -187,7 +187,7 @@ const advisors: Advisor[] = [
     focus: "Advisory Board",
     bio: "Advises on education, impact partnerships, and sustainable pathways for digital learning communities.",
     image:
-      "https://lh3.googleusercontent.com/d/18guG0-65HOzkz2g5EC1Rx8-x1Qz__957",
+      "https://storage.lingoql.com/holydigits101/virginia.jpg",
     linkedin:
       "https://www.linkedin.com/in/virginia-schmidt-397684b5?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app",
   },
@@ -196,7 +196,7 @@ const advisors: Advisor[] = [
     focus: "Advisory Board",
     bio: "Supports leadership wisdom, organizational trust, and long-term community-centered decision making.",
     image:
-      "https://lh3.googleusercontent.com/d/1nKAnz6tMxdap6sXwk3uZyd7HXPtpDOOD",
+      "https://storage.lingoql.com/holydigits101/israel.JPG",
     linkedin: "https://www.linkedin.com/in/israel-pender-0b98a389",
   },
 ];
