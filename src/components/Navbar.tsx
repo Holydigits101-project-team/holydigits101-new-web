@@ -20,8 +20,8 @@ export default function Navbar() {
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
     { name: 'Flagship Product', path: 'https://builders.holydigits101.com' },
-    { name: 'Team', path: '/team' },
-    { name: 'Leaders', path: '/leaders' },
+    { name: 'Waitlist', path: '/waitlist' },
+    { name: 'Team Members', path: '/team-members' },
     { name: 'Impact Hub', path: '/impact' },
     { name: 'Contact', path: '/contact' },
   ];

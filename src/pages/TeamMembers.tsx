@@ -226,7 +226,7 @@ function ArrowIcon() {
   );
 }
 
-export default function LeadersPage() {
+export default function TeamMembers() {
   const [activeCategory, setActiveCategory] = useState<(typeof categories)[number]>("All Leaders");
   const [expandedBios, setExpandedBios] = useState<Record<string, boolean>>({});
 

@@ -4,11 +4,13 @@ import Partnership from './pages/Partnership';
 import Scout from './pages/Scout';
 import About from './pages/About';
 import Contact from './pages/Contact';
-// import Gallery from './pages/Gallery';
 import ImpactHub from './pages/ImpactHub';
 import FlagshipProduct from './pages/FlagshipProduct';
-import Team from './pages/Team';
-import Leaders from './pages/LeadersPage';
+import TeamMembers from './pages/TeamMembers';
+import Waitlist from './pages/Waitlist';
+
+// import Team from './pages/Team';
+// import Gallery from './pages/Gallery';
 
 export default function App() {
   return (
@@ -20,8 +22,8 @@ export default function App() {
         <Route path="/scout" element={<Scout />} />
         <Route path="/partnership" element={<Partnership />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/leaders" element={<Leaders />} />
-        <Route path="/team" element={<Team />} />
+        <Route path="/team-members" element={<TeamMembers />} />
+        <Route path="/waitlist" element={<Waitlist />} />
         <Route path="/impact" element={<ImpactHub />} />
       </Routes>
     </Router>
