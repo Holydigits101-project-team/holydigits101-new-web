@@ -6,8 +6,8 @@ export default function Footer() {
   const quickLinks = [
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
-    { name: 'Gallery', path: '/gallery' },
-    { name: 'Impact Hub', path: '/https://holydigits-impact-hub.lingoql.com' },
+    { name: 'Waitlist', path: '/waitlist' },
+    { name: 'Impact Hub', path: '/impact' },
     { name: 'Contact', path: '/contact' },
   ];
 
