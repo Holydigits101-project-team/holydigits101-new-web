@@ -80,7 +80,7 @@ const teamMembers: TeamMember[] = [
     social: {
       label: "LinkedIn",
       url: "https://www.linkedin.com/in/dorcas-olaoye-606a41254?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-      display: "@horladoky1904",
+      display: "",
     },
     image:
       "https://storage.lingoql.com/holydigits101/cofounder.PNG",
@@ -463,7 +463,9 @@ export default function TeamMembers() {
                           aria-label={`Visit ${member.name} on ${member.social.label}`}
                         >
                           <span className="grid h-8 w-8 place-items-center rounded-full bg-[#F4B400]/14 text-[#fff3c4] transition group-hover:bg-[#F4B400]/26">
-                            <XIcon />
+                            {member.social.label=='X'?
+                              <XIcon /> : <LinkedInIcon />
+                            }
                           </span>
                           {member.social.display}
                         </a>
