@@ -26,8 +26,9 @@ export default function Home() {
             className="relative mx-auto w-24 h-24"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full blur-xl opacity-50 animate-pulse"></div>
-            <div className="relative w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
-              <span className="text-black font-bold text-4xl font-['Orbitron']">H</span>
+            <div className="relative w-24 h-24 bg-white rounded-full flex items-center justify-center">
+              {/* <span className="text-black font-bold text-4xl font-['Orbitron']">H</span> */}
+              <img src="https://storage.lingoql.com/holydigits101/logo-main.png" ></img>
             </div>
           </motion.div>
           <motion.div
