@@ -464,11 +464,7 @@ export default function TeamMembers() {
                         >
                           <span className="grid h-8 w-8 place-items-center rounded-full bg-[#F4B400]/14 text-[#fff3c4] transition group-hover:bg-[#F4B400]/26">
                             {member.social.label=='X'?
-                              <XIcon /> : 
-                              <div>
-                                <LinkedInIcon />
-                                LinkedIn Profile
-                              </div>
+                              <XIcon /> : <LinkedInIcon />
                             }
                           </span>
                           {member.social.display}
