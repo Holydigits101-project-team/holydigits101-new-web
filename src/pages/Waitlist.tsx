@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Users, Moon, Sun, Rocket, ChevronDown } from 'lucide-react';
 import { countryRegions } from '../data/countryRegions';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 // Comprehensive country list with codes and flags
 const countries = [
@@ -224,52 +226,7 @@ function Waitlist() {
         {/* Content */}
         <div className="relative z-10">
           {/* Navbar */}
-          <nav className={`sticky top-0 backdrop-blur-xl border-b z-50 transition-colors duration-300 ${
-            darkMode 
-              ? 'bg-[#0B1120]/40 border-yellow-500/10' 
-              : 'bg-white/40 border-gray-200'
-          }`}>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between items-center h-16">
-                {/* Logo */}
-                <div className="flex items-center">
-                  <span className={`text-xl sm:text-2xl font-bold bg-gradient-to-r bg-clip-text text-transparent ${
-                    darkMode 
-                      ? 'from-yellow-400 via-yellow-300 to-amber-400' 
-                      : 'from-yellow-600 via-amber-500 to-yellow-600'
-                  }`}>
-                    HolyDigits101
-                  </span>
-                </div>
-
-                {/* Nav Items */}
-                <div className="flex items-center space-x-4 sm:space-x-6">
-                  <a href="#" className={`px-4 py-2 border rounded-lg transition-all font-medium flex items-center space-x-1 ${
-                    darkMode 
-                      ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500 hover:text-black' 
-                      : 'bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-500 hover:text-white'
-                  }`}>
-                    <Users className="w-4 h-4" />
-                    <span>Waitlist</span>
-                  </a>
-                  <button
-                    onClick={() => setDarkMode(!darkMode)}
-                    className={`p-2 rounded-lg transition-colors ${
-                      darkMode 
-                        ? 'bg-white/5 hover:bg-white/10' 
-                        : 'bg-gray-100 hover:bg-gray-200'
-                    }`}
-                  >
-                    {darkMode ? (
-                      <Sun className="w-5 h-5 text-yellow-400" />
-                    ) : (
-                      <Moon className="w-5 h-5 text-gray-700" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </nav>
+          <Navbar />
 
           {/* Main Form Card */}
           <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
@@ -711,10 +668,12 @@ function Waitlist() {
             </div>
 
             {/* Footer */}
-            <div className={`text-center mt-8 text-sm ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>
+            {/* <div className={`text-center mt-8 text-sm ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>
               <p>© 2024 HolyDigits101. Shaping the future of African education & blockchain.</p>
-            </div>
+            </div> */}
           </div>
+
+          <Footer />
         </div>
       </div>
     </div>
