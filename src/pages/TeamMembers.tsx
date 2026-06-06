@@ -1,3 +1,5 @@
+import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
 import { useEffect, useMemo, useState } from "react";
 
 type TeamCategory = "Founders" | "Departmental Heads";
@@ -337,26 +339,9 @@ export default function TeamMembers() {
           ))}
         </div>
 
-        <header className="absolute left-0 right-0 top-0 z-30">
-          <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 lg:px-10" aria-label="Main navigation">
-            <a href="#top" className="group inline-flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[#F4B400]/35 bg-white/[0.07] text-sm font-black tracking-tight text-[#F4B400] shadow-[0_0_42px_rgba(244,180,0,0.18)] backdrop-blur-xl transition group-hover:border-[#F4B400]/70 group-hover:text-[#fff3c4]">
-                HD
-              </span>
-              <span className="text-sm font-semibold uppercase tracking-[0.34em] text-white/88 transition group-hover:text-[#F4B400]">
-                HolyDigits 101
-              </span>
-            </a>
-            <a
-              href="#leaders"
-              className="rounded-full border border-[#F4B400]/35 bg-white/[0.06] px-5 py-3 text-sm font-semibold text-[#fff3c4] shadow-[0_0_42px_rgba(244,180,0,0.12)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-[#F4B400] hover:bg-[#F4B400] hover:text-[#050505] hover:shadow-[0_0_46px_rgba(244,180,0,0.42)]"
-            >
-              Leaders
-            </a>
-          </nav>
-        </header>
+        <Navbar />
 
-        <div className="relative z-20 mx-auto w-full max-w-7xl px-6 py-32 lg:px-10">
+        <div className="mt-12 relative z-20 mx-auto w-full max-w-7xl px-6 py-32 lg:px-10">
           <div className="max-w-4xl pt-16">
             <p className="reveal mb-6 text-sm font-bold uppercase tracking-[0.42em] text-[#F4B400]" style={{ "--delay": "40ms" } as React.CSSProperties}>
               HolyDigits 101 Global
@@ -564,6 +549,8 @@ export default function TeamMembers() {
           </div>
         </div>
       </section>
+      
+      <Footer />
     </main>
   );
 }

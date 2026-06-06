@@ -229,7 +229,7 @@ function Waitlist() {
           <Navbar />
 
           {/* Main Form Card */}
-          <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
+          <div className="mt-12 max-w-5xl mx-auto px-4 py-8 sm:py-12">
             <div className={`backdrop-blur-2xl rounded-3xl shadow-2xl p-6 sm:p-10 lg:p-12 transition-colors duration-300 ${
               darkMode 
                 ? 'bg-white/5 border border-yellow-500/20 shadow-yellow-500/5' 

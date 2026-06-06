@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Upload, Award, ChevronRight, Filter, Sparkles } from 'lucide-react';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 const ImpactHub = () => {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
@@ -173,32 +175,10 @@ const ImpactHub = () => {
       </div>
 
       {/* Premium Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-2xl border-b border-[#FFD700]/30 shadow-[0_0_30px_rgba(255,215,0,0.1)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center group cursor-pointer">
-              <span className="text-2xl font-bold bg-gradient-to-r from-[#FFD700] via-[#FFC700] to-[#FFD700] bg-clip-text text-transparent animate-pulse" style={{
-                textShadow: '0 0 30px rgba(255, 215, 0, 0.5)'
-              }}>
-                HolyDigits101
-              </span>
-            </div>
-
-            {/* Navigation */}
-            <div className="flex items-center">
-              <a href="#" className="text-[#FFD700] font-bold flex items-center space-x-2 relative group">
-                <Award className="w-4 h-4 animate-pulse" />
-                <span>Impact Hub</span>
-                <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FFD700] transform origin-left transition-transform"></div>
-              </a>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
-      <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden pt-16">
+      <section className="mt-12 relative min-h-[70vh] flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0">
           <img 
             src="/images/hero-impact.jpg" 
@@ -561,6 +541,8 @@ const ImpactHub = () => {
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 };
