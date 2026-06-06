@@ -181,7 +181,7 @@ const ImpactHub = () => {
       <section className="mt-12 relative min-h-[70vh] flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0">
           <img 
-            src="/images/hero-impact.jpg" 
+            src="https://storage.lingoql.com/holydigits101/IMG_4889.png" 
             alt="Executive Impact" 
             className="w-full h-full object-cover opacity-30"
             style={{ transform: `translateY(${scrollY * 0.5}px)` }}
