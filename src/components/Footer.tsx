@@ -37,11 +37,13 @@ export default function Footer() {
               </div>
               <div className="relative w-12 h-12 rounded-full flex items-center justify-center">
                 <img src="https://storage.lingoql.com/holydigits101/logo-main.png" ></img>
-                <span>HolyDigits101</span>
+                <div class="ml-[-5px] md:block">
+                  <span class="text-white font-['Orbitron'] text-xl font-bold tracking-wider">HOLY<span class="text-yellow-400">DIGITS</span>101</span>
+                </div>
               </div>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">
-              Empowering individuals worldwide with the knowledge to navigate the digital economy with confidence and skill.
+              From classrooms to startups, from learners to leaders. We equip students and educators with the tools, mindset, and blockchain-powered knowledge needed to create wealth, build solutions, and lead in the decentralized digital economy.
             </p>
           </div>
 
