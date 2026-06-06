@@ -27,6 +27,7 @@ type Advisor = {
   bio: string;
   image: string;
   linkedin: string;
+  resizeImage?: boolean;
 };
 
 const heroImage =
@@ -78,8 +79,8 @@ const teamMembers: TeamMember[] = [
     fullBio:
       "Dorcas Olaoye is an educator, product manager, community builder, and Co-Founder/Executive Director of HOLYDIGITS101 Global. She is committed to empowering young people through education, technology, and digital innovation. Through her leadership at HOLYDIGITS101 Global, she develops programs and initiatives that help students, educators, and young professionals gain the skills needed to succeed in the digital age. With expertise in education, product management, project coordination, communications, and digital media, she focuses on building impactful learning communities that foster innovation, leadership, and personal growth.",
     social: {
-      label: "X",
-      url: "https://x.com/horladoky1904?s=21",
+      label: "LinkedIn",
+      url: "https://www.linkedin.com/in/dorcas-olaoye-606a41254?utm_source=share_via&utm_content=profile&utm_medium=member_android",
       display: "@horladoky1904",
     },
     image:
@@ -179,6 +180,7 @@ const advisors: Advisor[] = [
     bio: "Provides strategic counsel for growth, global positioning, and responsible digital ecosystem building.",
     image:
       "https://storage.lingoql.com/holydigits101/grapov.jpg",
+    resizeImage: true,
     linkedin:
       "https://www.linkedin.com/in/alex-grapov-com?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app",
   },
@@ -188,6 +190,7 @@ const advisors: Advisor[] = [
     bio: "Advises on education, impact partnerships, and sustainable pathways for digital learning communities.",
     image:
       "https://storage.lingoql.com/holydigits101/virginia.jpg",
+    resizeImage: true,
     linkedin:
       "https://www.linkedin.com/in/virginia-schmidt-397684b5?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app",
   },
@@ -502,7 +505,9 @@ export default function TeamMembers() {
                   <img
                     src={advisor.image}
                     alt={advisor.name}
-                    className="h-full w-full object-cover opacity-92 transition duration-700 group-hover:scale-105"
+                    className={`h-full w-full object-cover opacity-92 transition duration-700 group-hover:scale-105 ${
+                      advisor.resizeImage ? 'object-contain' : ''
+                    }`}
                     loading="lazy"
                   />
                 </div>
