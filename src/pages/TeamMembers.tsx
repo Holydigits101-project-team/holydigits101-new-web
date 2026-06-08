@@ -179,7 +179,7 @@ const teamMembers: TeamMember[] = [
     fullBio:
       "Edu Confidence Edwin also leads the Support Units for Monitoring & Evaluation (M&E), Administration, and Reporting. This role strengthens internal accountability, program documentation, operational follow-through, and the reporting structure needed to measure impact across HolyDigits101 initiatives.",
     image:
-      "https://images.pexels.com/photos/28426638/pexels-photo-28426638.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=900",
+      "https://res.cloudinary.com/dvjiszahi/image/upload/v1780913543/4B67536D-3868-4551-8E48-38FC8A663DF2_wfxnai.png",
     imageClass: "h-[385px]",
   },
 ];
@@ -554,7 +554,7 @@ export default function TeamMembers() {
           </p>
           <div className="reveal mt-10 flex justify-center" style={{ "--delay": "230ms" } as React.CSSProperties}>
             <a
-              href="mailto:hello@holydigits101.com?subject=Executive%20Member%20Application"
+              href="/waitlist"
               className="pulse-glow inline-flex items-center gap-3 rounded-full bg-[#F4B400] px-8 py-4 text-sm font-bold uppercase tracking-[0.16em] text-[#050505] transition hover:-translate-y-1 hover:bg-[#D4A017]"
             >
               Apply to Join as Executive Member
