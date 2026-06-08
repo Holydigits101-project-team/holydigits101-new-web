@@ -99,6 +99,18 @@ const teamMembers: TeamMember[] = [
     imageClass: "h-[410px]",
   },
   {
+    name: "Virginia Schmidt",
+    role: "Operative Board",
+    category: "Founders",
+    summary:
+      "Virginia Schmidt stands at the intersection of innovation, creativity, and impact. Founder Xini8. She spearheads a decentralized movement redefining how people leverage social capital through blockchain and Web3 technology.",
+    fullBio:
+      "Virginia Schmidt stands at the intersection of innovation, creativity, and impact. Founder Xini8. She spearheads a decentralized movement redefining how people leverage social capital through blockchain and Web3 technology.Known in global circles as a “business punk,” Virginia embodies a bold, disruptive energy—challenging outdated systems and inspiring a new generation of thinkers, builders, and dreamers to take ownership of their digital and economic futures. Her work bridges traditional business excellence with decentralized innovation, positioning her as a true connector within the Web3 ecosystem. From shaping crypto and blockchain initiatives to curating virtual and real-world experiences, Virginia is constantly pushing boundaries. Virginia Schmidt is not just leading conversations—she’s architecting the future of decentralized empowerment",
+    image:
+      "https://res.cloudinary.com/dvjiszahi/image/upload/v1780910676/PHOTO-2025-06-22-19-51-36_koegis.jpg",
+    imageClass: "h-[410px]",
+  },
+  {
     name: "Akinlolu Blessing",
     role: "HOD, Education & Curriculum",
     category: "Departmental Heads",
