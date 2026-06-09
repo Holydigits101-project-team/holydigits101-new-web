@@ -345,7 +345,7 @@ export default function Scout() {
                 <div>
                   <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Phone Number *</label>
                   <div className="flex gap-2">
-                    <select 
+                    {/* <select 
                       value={formData.countryCode} 
                       onChange={e => setFormData({...formData, countryCode: e.target.value})}
                       className="bg-white/5 border border-white/10 rounded-xl px-3 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700"
@@ -369,6 +369,18 @@ export default function Scout() {
                         <option value="+971">🇦🇪 +971</option>
                         <option value="+61">🇦🇺 +61</option>
                         <option value="+55">🇧🇷 +55</option>
+                    </select> */}
+                    <select
+                      required
+                      value={formData.countryCode} 
+                      onChange={e => setFormData({...formData, countryCode: e.target.value})}
+                      className="bg-white/5 border border-white/10 rounded-xl px-3 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700"
+                    >
+                      {countries.map((country) => (
+                        <option key={`code-${country.name}`} value={country.name}>
+                          {country.flag} {country.name} ({country.code})
+                        </option>
+                      ))}
                     </select>
                     <input 
                       type="tel" 
