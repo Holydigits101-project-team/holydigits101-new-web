@@ -392,14 +392,15 @@ export default function Scout() {
                     required
                     value={formData.country}
                     onChange={e => setFormData({...formData, country: e.target.value})}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                      darkMode 
-                        ? 'bg-black/40 border-yellow-500/20 focus:ring-yellow-500/50 focus:border-yellow-500 text-white' 
-                        : 'bg-white border-gray-300 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-900'
-                    }`}
+                    className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 ${errors.country ? 'border-red-500' : 'border-white/10'}`}
+                    // className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    //   darkMode 
+                    //     ? 'bg-black/40 border-yellow-500/20 focus:ring-yellow-500/50 focus:border-yellow-500 text-white' 
+                    //     : 'bg-white border-gray-300 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-900'
+                    // }`}
                   >
                     {countries.map((country) => (
-                      <option key={country.name} value={country.name} className={darkMode ? 'bg-[#0B1120]' : 'bg-white'}>
+                      <option key={country.name} value={country.name}>
                         {country.flag} {country.name}
                       </option>
                     ))}
@@ -417,17 +418,18 @@ export default function Scout() {
                       value={formData.state}
                       onChange={e => setFormData({...formData, state: e.target.value})}
                       disabled={!formData.country}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                        darkMode 
-                          ? 'bg-black/40 border-yellow-500/20 focus:ring-yellow-500/50 focus:border-yellow-500 text-white' 
-                          : 'bg-white border-gray-300 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-900'
-                      }`}
+                      className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 disabled:opacity-40 ${errors.state ? 'border-red-500' : 'border-white/10'}`}
+                      // className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      //   darkMode 
+                      //     ? 'bg-black/40 border-yellow-500/20 focus:ring-yellow-500/50 focus:border-yellow-500 text-white' 
+                      //     : 'bg-white border-gray-300 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-900'
+                      // }`}
                     >
-                      <option value="" className={darkMode ? 'bg-[#0B1120]' : 'bg-white'}>
-                        Select {formData.state ? 'Region/State' : 'a country first'}
+                      <option value="">
+                        Select {formData.country ? 'Region/State' : 'a country first'}
                       </option>
-                      {formData.state && countryRegions[formData.state] && countryRegions[formData.state].map((region) => (
-                        <option key={region} value={region} className={darkMode ? 'bg-[#0B1120]' : 'bg-white'}>
+                      {formData.country && countryRegions[formData.country] && countryRegions[formData.country].map((region) => (
+                        <option key={region} value={region}>
                           {region}
                         </option>
                       ))}
