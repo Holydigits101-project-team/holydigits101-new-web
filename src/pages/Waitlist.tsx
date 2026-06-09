@@ -67,9 +67,7 @@ function Waitlist() {
   const [captchaAnswer, setCaptchaAnswer] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [captchaToken, setCaptchaToken] = useState(null);
-  console.log(import.meta?.env?.VITE_RECAPTCHA_SITE_KEY);
-  console.log(import.meta?.env);
-  console.log(import.meta);
+  const VITE_RECAPTCHA_SITE_KEY = import.meta?.env?.VITE_RECAPTCHA_SITE_KEY;
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -551,7 +549,7 @@ function Waitlist() {
                 <div className={`border-t pt-8 space-y-6 ${darkMode ? 'border-yellow-500/10' : 'border-gray-200'}`}>
                   {/* Captcha */}
                   <ReCAPTCHA
-                    sitekey="6LfyexUtAAAAADUlc8XO9pRQVQyjLxHouo_eQHIv"
+                    sitekey={VITE_RECAPTCHA_SITE_KEY}
                     onChange={(token) => setCaptchaToken(token)}
                     className="g-captcha"
                   />
