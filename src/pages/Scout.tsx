@@ -7,7 +7,6 @@ import {
   AlertCircle, 
   Building, 
   MapPin, 
-  FileText, 
   PlusCircle, 
   CheckCircle2, 
   Lock
@@ -15,27 +14,6 @@ import {
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { countryRegions, countries } from '@/data/countryRegions';
-
-// State-by-country mapping from the original configuration
-const STATE_DATA: Record<string, string[]> = {
-    NG: ["Abia","Adamawa","Akwa Ibom","Anambra","Bauchi","Bayelsa","Benue","Borno","Cross River","Delta","Ebonyi","Edo","Ekiti","Enugu","FCT – Abuja","Gombe","Imo","Jigawa","Kaduna","Kano","Katsina","Kebbi","Kogi","Kwara","Lagos","Nasarawa","Niger","Ogun","Ondo","Osun","Oyo","Plateau","Rivers","Sokoto","Taraba","Yobe","Zamfara"],
-    US: ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"],
-    GB: ["England – London","England – South East","England – North West","England – Yorkshire","England – Midlands","England – South West","England – East","Wales","Scotland","Northern Ireland"],
-    GH: ["Ashanti","Brong-Ahafo","Central","Eastern","Greater Accra","Northern","Upper East","Upper West","Volta","Western"],
-    KE: ["Nairobi","Coast","Central","Eastern","North Eastern","Nyanza","Rift Valley","Western","Mombasa County","Kisumu County","Nakuru County","Eldoret County"],
-    IN: ["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Delhi"],
-    CA: ["Alberta","British Columbia","Manitoba","New Brunswick","Newfoundland and Labrador","Nova Scotia","Ontario","Prince Edward Island","Quebec","Saskatchewan","Northwest Territories","Nunavut","Yukon"],
-    ZA: ["Eastern Cape","Free State","Gauteng","KwaZulu-Natal","Limpopo","Mpumalanga","North West","Northern Cape","Western Cape"],
-    UG: ["Central Region","Eastern Region","Northern Region","Western Region","Kampala Capital City"],
-    TZ: ["Arusha","Dar es Salaam","Dodoma","Geita","Iringa","Kagera","Katavi","Kigoma","Kilimanjaro","Lindi","Manyara","Mara","Mbeya","Mjini Magharibi","Morogoro","Mtwara","Mwanza","Njombe","Pemba North","Pemba South","Pwani","Rukwa","Ruvuma","Shinyanga","Simiyu","Singida","Tabora","Tanga","Zanzibar North","Zanzibar South"],
-    ET: ["Addis Ababa","Afar","Amhara","Benishangul-Gumuz","Dire Dawa","Gambela","Harari","Oromia","Sidama","Somali","Southern Nations","Tigray"],
-    CM: ["Adamawa","Centre","East","Far North","Littoral","North","North West","South","South West","West"],
-    AU: ["Australian Capital Territory","New South Wales","Northern Territory","Queensland","South Australia","Tasmania","Victoria","Western Australia"],
-    DE: ["Baden-Württemberg","Bavaria","Berlin","Brandenburg","Bremen","Hamburg","Hesse","Lower Saxony","Mecklenburg-Vorpommern","North Rhine-Westphalia","Rhineland-Palatinate","Saarland","Saxony","Saxony-Anhalt","Schleswig-Holstein","Thuringia"],
-    FR: ["Auvergne-Rhône-Alpes","Bourgogne-Franche-Comté","Brittany","Centre-Val de Loire","Corsica","Grand Est","Hauts-de-France","Île-de-France","Normandy","Nouvelle-Aquitaine","Occitanie","Pays de la Loire","Provence-Alpes-Côte d'Azur"],
-    OTHER: ["Please enter region in address field above"],
-    NG_OTHER: ["Please specify in address"],
-  };
 
 // Error interface for validation
 interface FormErrors {
@@ -199,8 +177,6 @@ export default function Scout() {
   };
 
   // Get current applicable state values array
-  const availableStates = STATE_DATA[formData.country] || STATE_DATA[formData.country === 'NG_OTHER' ? 'OTHER' : 'OTHER'] || [];
-
   return (
     <div className="bg-[#0a0f0d] text-white min-h-screen overflow-x-hidden font-sans relative">
       
@@ -345,31 +321,6 @@ export default function Scout() {
                 <div>
                   <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Phone Number *</label>
                   <div className="flex gap-2">
-                    {/* <select 
-                      value={formData.countryCode} 
-                      onChange={e => setFormData({...formData, countryCode: e.target.value})}
-                      className="bg-white/5 border border-white/10 rounded-xl px-3 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700"
-                    >
-                        <option value="+234">🇳🇬 +234</option>
-                        <option value="+1">🇺🇸 +1</option>
-                        <option value="+44">🇬🇧 +44</option>
-                        <option value="+233">🇬🇭 +233</option>
-                        <option value="+254">🇰🇪 +254</option>
-                        <option value="+91">🇮🇳 +91</option>
-                        <option value="+1-CA">🇨🇦 +1</option>
-                        <option value="+27">🇿🇦 +27</option>
-                        <option value="+256">🇺🇬 +256</option>
-                        <option value="+255">🇹🇿 +255</option>
-                        <option value="+251">🇪🇹 +251</option>
-                        <option value="+237">🇨🇲 +237</option>
-                        <option value="+225">🇨🇮 +225</option>
-                        <option value="+221">🇸🇳 +221</option>
-                        <option value="+49">🇩🇪 +49</option>
-                        <option value="+33">🇫🇷 +33</option>
-                        <option value="+971">🇦🇪 +971</option>
-                        <option value="+61">🇦🇺 +61</option>
-                        <option value="+55">🇧🇷 +55</option>
-                    </select> */}
                     <select
                       required
                       value={formData.countryCode} 
@@ -405,11 +356,6 @@ export default function Scout() {
                     value={formData.country}
                     onChange={e => setFormData({...formData, country: e.target.value})}
                     className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 ${errors.country ? 'border-red-500' : 'border-white/10'}`}
-                    // className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                    //   darkMode 
-                    //     ? 'bg-black/40 border-yellow-500/20 focus:ring-yellow-500/50 focus:border-yellow-500 text-white' 
-                    //     : 'bg-white border-gray-300 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-900'
-                    // }`}
                   >
                     {countries.map((country) => (
                       <option key={country.name} value={country.name}>
@@ -431,11 +377,6 @@ export default function Scout() {
                       onChange={e => setFormData({...formData, state: e.target.value})}
                       disabled={!formData.country}
                       className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 disabled:opacity-40 ${errors.state ? 'border-red-500' : 'border-white/10'}`}
-                      // className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                      //   darkMode 
-                      //     ? 'bg-black/40 border-yellow-500/20 focus:ring-yellow-500/50 focus:border-yellow-500 text-white' 
-                      //     : 'bg-white border-gray-300 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-900'
-                      // }`}
                     >
                       <option value="">
                         Select {formData.country ? 'Region/State' : 'a country first'}
@@ -447,88 +388,6 @@ export default function Scout() {
                       ))}
                     </select>
                   </div>
-                  {/* <div>
-                    <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Your Country *</label>
-                    <select
-                      value={formData.country}
-                      onChange={e => setFormData({...formData, country: e.target.value})}
-                      className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 ${errors.country ? 'border-red-500' : 'border-white/10'}`}
-                    >
-                      <option value="" className="text-gray-400">Select country...</option>
-                        <option value="NG">🇳🇬 Nigeria</option>
-                        <option value="US">🇺🇸 United States</option>
-                        <option value="GB">🇬🇧 United Kingdom</option>
-                        <option value="GH">🇬🇭 Ghana</option>
-                        <option value="KE">🇰🇪 Kenya</option>
-                        <option value="IN">🇮🇳 India</option>
-                        <option value="CA">🇨🇦 Canada</option>
-                        <option value="ZA">🇿🇦 South Africa</option>
-                        <option value="UG">🇺🇬 Uganda</option>
-                        <option value="TZ">🇹🇿 Tanzania</option>
-                        <option value="ET">🇪🇹 Ethiopia</option>
-                        <option value="CM">🇨🇲 Cameroon</option>
-                        <option value="CI">🇨🇮 Côte d'Ivoire</option>
-                        <option value="SN">🇸🇳 Senegal</option>
-                        <option value="RW">🇷🇼 Rwanda</option>
-                        <option value="AU">🇦🇺 Australia</option>
-                        <option value="DE">🇩🇪 Germany</option>
-                        <option value="FR">🇫🇷 France</option>
-                        <option value="AE">🇦🇪 UAE</option>
-                        <option value="BR">🇧🇷 Brazil</option>
-                        <option value="PH">🇵🇭 Philippines</option>
-                        <option value="PK">🇵🇰 Pakistan</option>
-                        <option value="BD">🇧🇩 Bangladesh</option>
-                        <option value="LS">🇱🇸 Lesotho</option>
-                        <option value="ZM">🇿🇲 Zambia</option>
-                        <option value="ZW">🇿🇼 Zimbabwe</option>
-                        <option value="MW">🇲🇼 Malawi</option>
-                        <option value="MZ">🇲🇿 Mozambique</option>
-                        <option value="MG">🇲🇬 Madagascar</option>
-                        <option value="GN">🇬🇳 Guinea</option>
-                        <option value="ML">🇲🇱 Mali</option>
-                        <option value="NE">🇳🇪 Niger</option>
-                        <option value="BF">🇧🇫 Burkina Faso</option>
-                        <option value="TG">🇹🇬 Togo</option>
-                        <option value="BJ">🇧🇯 Benin</option>
-                        <option value="SO">🇸🇴 Somalia</option>
-                        <option value="SD">🇸🇩 Sudan</option>
-                        <option value="LY">🇱🇾 Libya</option>
-                        <option value="EG">🇪🇬 Egypt</option>
-                        <option value="MA">🇲🇦 Morocco</option>
-                        <option value="TN">🇹🇳 Tunisia</option>
-                        <option value="DZ">🇩🇿 Algeria</option>
-                        <option value="NL">🇳🇱 Netherlands</option>
-                        <option value="ES">🇪🇸 Spain</option>
-                        <option value="IT">🇮🇹 Italy</option>
-                        <option value="PT">🇵🇹 Portugal</option>
-                        <option value="IE">🇮🇪 Ireland</option>
-                        <option value="NZ">🇳🇿 New Zealand</option>
-                        <option value="SG">🇸🇬 Singapore</option>
-                        <option value="NG_OTHER">🌍 Other African Country</option>
-                        <option value="OTHER">🌐 Other</option>
-                    </select>
-                    {errors.country && (
-                      <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Selection required</p>
-                    )}
-                  </div> */}
-
-                  {/* <div>
-                    <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">State / Region *</label>
-                    <select
-                      value={formData.state}
-                      onChange={e => setFormData({...formData, state: e.target.value})}
-                      disabled={!formData.country}
-                      className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 disabled:opacity-40 ${errors.state ? 'border-red-500' : 'border-white/10'}`}
-                    >
-                      <option value="">Select state/region...</option>
-                      {availableStates.map(s => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                    {errors.state && (
-                      <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Selection required</p>
-                    )}
-                  </div> */}
                 </div>
 
                 {/* Permanent Contact Address */}
