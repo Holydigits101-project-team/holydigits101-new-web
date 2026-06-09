@@ -24,6 +24,7 @@ export default function Navbar() {
     { name: 'Team Members', path: '/team-members' },
     { name: 'Impact Hub', path: '/impact' },
     { name: 'Contact', path: '/contact' },
+    { name: 'Hackathon', path: 'https://ztq.devpost.com' },
   ];
 
   return (
