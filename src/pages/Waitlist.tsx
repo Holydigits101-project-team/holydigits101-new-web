@@ -3,6 +3,7 @@ import { Users, Moon, Sun, Rocket, ChevronDown } from 'lucide-react';
 import { countryRegions } from '../data/countryRegions';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import ReCAPTCHA from "react-google-recaptcha";
 
 // Comprehensive country list with codes and flags
 const countries = [
@@ -168,6 +169,7 @@ function Waitlist() {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [captchaAnswer, setCaptchaAnswer] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -216,10 +218,11 @@ function Waitlist() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (parseInt(captchaAnswer) !== 9) {
-      alert('Please solve the captcha correctly');
+    if (!captchaToken) {
+      alert("Please solve the captcha correctly");
       return;
     }
+
     if (!agreedToTerms) {
       alert('Please agree to the Terms & Conditions');
       return;
@@ -647,7 +650,11 @@ function Waitlist() {
                 {/* Final Section */}
                 <div className={`border-t pt-8 space-y-6 ${darkMode ? 'border-yellow-500/10' : 'border-gray-200'}`}>
                   {/* Captcha */}
-                  <div>
+                  <ReCAPTCHA
+                    sitekey="YOUR_SITE_KEY"
+                    onChange={(token) => setCaptchaToken(token)}
+                  />
+                  {/* <div>
                     <label className={`block text-sm font-medium mb-2 ${
                       darkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>
@@ -674,7 +681,7 @@ function Waitlist() {
                         placeholder="?"
                       />
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Terms Checkbox */}
                   <label className="flex items-start space-x-3 cursor-pointer group">
