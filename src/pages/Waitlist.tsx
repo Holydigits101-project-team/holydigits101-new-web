@@ -548,7 +548,7 @@ function Waitlist() {
                 <div className={`border-t pt-8 space-y-6 ${darkMode ? 'border-yellow-500/10' : 'border-gray-200'}`}>
                   {/* Captcha */}
                   <ReCAPTCHA
-                    sitekey="YOUR_SITE_KEY"
+                    sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
                     onChange={(token) => setCaptchaToken(token)}
                     className="g-captcha"
                   />
