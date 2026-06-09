@@ -168,6 +168,11 @@ const teamMembers: TeamMember[] = [
       "Supports the technical systems, digital tools, and infrastructure behind decentralized learning access.",
     fullBio:
       "Jimin supports Technical / IT operations for HolyDigits101, helping the organization maintain reliable systems, digital tools, and technical workflows. This role strengthens the foundation needed to deliver Web3 education, community programs, and future platform experiences at scale.",
+      social: {
+      label: "LinkedIn",
+      url: "https://www.linkedin.com/in/dorcas-olaoye-606a41254?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+      display: "",
+    },
     image:
       "https://images.pexels.com/photos/8091254/pexels-photo-8091254.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=900",
     imageClass: "h-[470px]",
@@ -186,15 +191,21 @@ const teamMembers: TeamMember[] = [
   },
    {
     name: "Daniel Okon",
-    role: "Cheirf Traning Officer",
+    role: "Cheif Traning Officer",
     category: "Departmental Heads",
     summary:
       "Daniel Okon is the Chief Traning Officer of HolyDigits101 Africa, where he drives organisational growth, trains executive members, and coordinates strategic partnership proposals for one of Africa's emerging Web3 and blockchain education initiatives.",
     fullBio:
       "Daniel Okon is the Chief Technology Officer of HolyDigits101 Africa, where he drives organisational growth, trains executive members, and coordinates strategic partnership proposals for one of Africa's emerging Web3 and blockchain education initiatives.  A PMP-certified Project Manager with over five years of cross-industry experience, Daniel combines executive leadership with deep operational expertise across the tech, industrial, food service, and public relations sectors. Holding a Bachelor of Science in Political Science and Public Administration from the University of Benin, Daniel has consistently operated at both strategic and ground levels — from designing safety compliance programs for 50+ workers at Yongxin Iron & Steel, to managing revenue pipelines and technical teams at Havilah Tech, to delivering strategic business recommendations as a Consultant at ChilTech. Notable among his achievements is a 40% increase in daily profit and 30% increase in monthly profit delivered during his supervisory role at Yummies by Igho — a testament to his results-driven approach to business and people management. Beyond his professional engagements, Daniel is a recognised alumnus of the Young African Leadership Initiative (YALI) and an active member of Junior Chambers International (JCI) and Man O' War — reflecting a sustained commitment to leadership development, community impact, and national service.",
+    social: {
+      label: "LinkedIn",
+      url: "https://www.linkedin.com/in/daniel-okon-a74451328/",
+      display: "",
+    },
     image:
       "https://res.cloudinary.com/dvjiszahi/image/upload/v1781043913/IMG_4966.JPG_1_zvt240.jpg",
     imageClass: "h-[405px]",
+    
   },
 ];
 
