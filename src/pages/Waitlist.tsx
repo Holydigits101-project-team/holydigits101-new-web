@@ -456,6 +456,8 @@ function Waitlist() {
                     value={formData.motivation}
                     onChange={handleInputChange}
                     rows={6}
+                    minLength={1}
+                    maxLength={200}
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 resize-none transition-colors ${
                       darkMode 
                         ? 'bg-black/40 border-yellow-500/20 focus:ring-yellow-500/50 focus:border-yellow-500 text-white placeholder-gray-500' 
@@ -463,6 +465,24 @@ function Waitlist() {
                     }`}
                     placeholder="Describe your leadership experience, vision for African education, blockchain expertise, and what you'd bring to the executive council..."
                   />
+                  <div className="text-sm text-gray-500 mt-1">
+                    {formData.motivation.length}/200
+                  </div>
+                  {/* <textarea
+                    name="motivation"
+                    required
+                    value={formData.motivation}
+                    onChange={handleInputChange}
+                    rows={6}
+                    min={1}
+                    max={200}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 resize-none transition-colors ${
+                      darkMode 
+                        ? 'bg-black/40 border-yellow-500/20 focus:ring-yellow-500/50 focus:border-yellow-500 text-white placeholder-gray-500' 
+                        : 'bg-white border-gray-300 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-900 placeholder-gray-400'
+                    }`}
+                    placeholder="Describe your leadership experience, vision for African education, blockchain expertise, and what you'd bring to the executive council..."
+                  /> */}
                 </div>
 
                 {/* Schedule Interview */}
