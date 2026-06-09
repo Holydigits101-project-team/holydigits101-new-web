@@ -318,8 +318,8 @@ export default function About() {
             </h2>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
-            {['Mprofy DAO', 'Sound Rig', 'Spent Academy', 'LingoQL', 'Suilife'].map((partner, index) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+            {['Mprofy DAO', 'Sound Rig', 'Spent Academy', 'LingoQL', 'Suilife','Xini8'].map((partner, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, scale: 0.8 }}
