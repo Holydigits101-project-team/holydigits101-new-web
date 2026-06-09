@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { countryRegions, countries } from '@/data/countryRegions';
 
 // State-by-country mapping from the original configuration
 const STATE_DATA: Record<string, string[]> = {
@@ -383,7 +384,55 @@ export default function Scout() {
 
                 {/* Country and State Row Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
+                <div>
+                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Your Country *</label>
+                  <select
+                    name="country"
+                    required
+                    value={formData.country}
+                    onChange={e => setFormData({...formData, country: e.target.value})}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      darkMode 
+                        ? 'bg-black/40 border-yellow-500/20 focus:ring-yellow-500/50 focus:border-yellow-500 text-white' 
+                        : 'bg-white border-gray-300 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-900'
+                    }`}
+                  >
+                    {countries.map((country) => (
+                      <option key={country.name} value={country.name} className={darkMode ? 'bg-[#0B1120]' : 'bg-white'}>
+                        {country.flag} {country.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                    <label className={`block text-sm font-medium mb-2 ${
+                      darkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                      Region / State <span className={darkMode ? 'text-yellow-400' : 'text-yellow-600'}>*</span>
+                    </label>
+                    <select
+                      name="region"
+                      required
+                      value={formData.state}
+                      onChange={handleInputChange}
+                      disabled={!formData.country}
+                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                        darkMode 
+                          ? 'bg-black/40 border-yellow-500/20 focus:ring-yellow-500/50 focus:border-yellow-500 text-white' 
+                          : 'bg-white border-gray-300 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-900'
+                      }`}
+                    >
+                      <option value="" className={darkMode ? 'bg-[#0B1120]' : 'bg-white'}>
+                        Select {formData.state ? 'Region/State' : 'a country first'}
+                      </option>
+                      {formData.state && countryRegions[formData.state] && countryRegions[formData.state].map((region) => (
+                        <option key={region} value={region} className={darkMode ? 'bg-[#0B1120]' : 'bg-white'}>
+                          {region}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* <div>
                     <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Your Country *</label>
                     <select
                       value={formData.country}
@@ -446,9 +495,9 @@ export default function Scout() {
                     {errors.country && (
                       <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Selection required</p>
                     )}
-                  </div>
+                  </div> */}
 
-                  <div>
+                  {/* <div>
                     <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">State / Region *</label>
                     <select
                       value={formData.state}
@@ -464,7 +513,7 @@ export default function Scout() {
                     {errors.state && (
                       <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Selection required</p>
                     )}
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Permanent Contact Address */}
