@@ -415,7 +415,7 @@ export default function Scout() {
                       name="region"
                       required
                       value={formData.state}
-                      onChange={handleInputChange}
+                      onChange={e => setFormData({...formData, state: e.target.value})}
                       disabled={!formData.country}
                       className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
                         darkMode 
