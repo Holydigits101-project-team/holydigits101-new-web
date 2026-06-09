@@ -3,6 +3,35 @@ import { Target, Eye, Award, Users, Lightbulb, Shield, Sparkles } from 'lucide-r
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
+const trustedPartners = [
+  {
+    name: 'Mprofy DAO',
+    website: 'https://www.mprofy.com/',
+    logoSrc: 'https://www.google.com/s2/favicons?domain=mprofy.com&sz=128',
+  },
+  {
+    name: 'Sound Rig',
+  },
+  {
+    name: 'Spent Academy',
+    website: 'https://spentacademy.com/',
+    logoSrc: 'https://www.google.com/s2/favicons?domain=spentacademy.com&sz=128',
+  },
+  {
+    name: 'LingoQL',
+    website: 'https://lingoql.com/',
+    logoSrc: 'https://www.google.com/s2/favicons?domain=lingoql.com&sz=128',
+  },
+  {
+    name: 'Suilife',
+  },
+  {
+    name: 'Xini8',
+    website: 'https://xini8.com/',
+    logoSrc: 'https://www.google.com/s2/favicons?domain=xini8.com&sz=128',
+  },
+];
+
 export default function About() {
   return (
     <div className="bg-black min-h-screen">
@@ -318,22 +347,54 @@ export default function About() {
             </h2>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-            {['Mprofy DAO', 'Sound Rig', 'Spent Academy', 'LingoQL', 'Suilife','Xini8'].map((partner, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-                className="aspect-square bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-2xl flex items-center justify-center hover:border-yellow-500/50 transition-all backdrop-blur-sm"
-              >
-                <span className="text-gray-400 font-semibold text-center px-4">
-                  {partner}
-                </span>
-              </motion.div>
-            ))}
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-4 md:gap-5">
+            {trustedPartners.map((partner, index) => {
+              const CardContent = (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.08 }}
+                  whileHover={partner.website ? { y: -6, scale: 1.03 } : undefined}
+                  className={`group relative mx-auto aspect-square w-full max-w-[88px] overflow-hidden rounded-lg border border-white/10 bg-white shadow-[0_14px_30px_rgba(0,0,0,0.2)] transition-all duration-300 md:max-w-[104px] ${
+                    partner.website
+                      ? 'cursor-pointer hover:border-yellow-400 hover:shadow-[0_18px_42px_rgba(234,179,8,0.16)]'
+                      : 'opacity-90'
+                  }`}
+                >
+                  <div className="flex h-full w-full items-center justify-center">
+                    {partner.logoSrc ? (
+                      <img
+                        src={partner.logoSrc}
+                        alt={`${partner.name} logo`}
+                        loading="lazy"
+                        className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center bg-gray-100 px-1 text-center font-['Orbitron'] text-[10px] font-bold uppercase leading-tight text-gray-900 sm:text-xs">
+                        {partner.name}
+                      </span>
+                    )}
+                  </div>
+                </motion.div>
+              );
+
+              return partner.website ? (
+                <a
+                  key={partner.name}
+                  href={partner.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Visit ${partner.name} website`}
+                >
+                  {CardContent}
+                </a>
+              ) : (
+                <div key={partner.name} aria-label={`${partner.name} partner logo`}>
+                  {CardContent}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
