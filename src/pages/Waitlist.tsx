@@ -653,6 +653,7 @@ function Waitlist() {
                   <ReCAPTCHA
                     sitekey="YOUR_SITE_KEY"
                     onChange={(token) => setCaptchaToken(token)}
+                    className="g-captcha"
                   />
                   {/* <div>
                     <label className={`block text-sm font-medium mb-2 ${
