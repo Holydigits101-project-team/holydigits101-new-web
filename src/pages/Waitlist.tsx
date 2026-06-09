@@ -465,7 +465,7 @@ function Waitlist() {
                     }`}
                     placeholder="Describe your leadership experience, vision for African education, blockchain expertise, and what you'd bring to the executive council..."
                   />
-                  <div className="text-sm text-gray-500 mt-1">
+                  <div className="text-sm text-gray-500 mt-1 flex justify-end">
                     {formData.motivation.length}/200
                   </div>
                   {/* <textarea
