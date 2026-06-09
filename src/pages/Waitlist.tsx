@@ -189,9 +189,9 @@ function Waitlist() {
       const selectedDate = new Date(value);
       const day = selectedDate.getDay();
   
-      // 3 = Wednesday, 4 = Thursday
-      if (day === 3 || day === 4) {
-        alert("Wednesdays and Thursdays are not available.");
+      // 3 = Wednesday, 4 = Thursday, 6 = Sunday
+      if (day === 3 || day === 4 || day === 7) {
+        alert("Wednesdays, Thursdays and Sundays are not available.");
         return;
       }
     }
