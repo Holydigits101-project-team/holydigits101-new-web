@@ -60,6 +60,7 @@ interface FormErrors {
 export default function Scout() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [darkMode, setDarkMode] = useState(true);
 
   // Form Field States
   const [formData, setFormData] = useState({
