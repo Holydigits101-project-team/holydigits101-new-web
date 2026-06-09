@@ -178,7 +178,24 @@ function Waitlist() {
     );
   };
 
+  // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  //   setFormData({ ...formData, [e.target.name]: e.target.value });
+  // };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+  
+    if (name === "preferredDate") {
+      const selectedDate = new Date(value);
+      const day = selectedDate.getDay();
+  
+      // 3 = Wednesday, 4 = Thursday
+      if (day === 3 || day === 4) {
+        alert("Wednesdays and Thursdays are not available.");
+        return;
+      }
+    }
+  
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
