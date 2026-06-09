@@ -158,6 +158,8 @@ const teamMembers: TeamMember[] = [
       "https://images.pexels.com/photos/16306778/pexels-photo-16306778.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=900",
     imageClass: "h-[405px]",
   },
+
+ 
   {
     name: "Jimin",
     role: "Technical / IT Lead",
@@ -181,6 +183,18 @@ const teamMembers: TeamMember[] = [
     image:
       "https://res.cloudinary.com/dvjiszahi/image/upload/v1780913543/4B67536D-3868-4551-8E48-38FC8A663DF2_wfxnai.png",
     imageClass: "h-[385px]",
+  },
+   {
+    name: "Daniel Okon",
+    role: "Cheirf Traning Officer",
+    category: "Departmental Heads",
+    summary:
+      "Daniel Okon is the Chief Traning Officer of HolyDigits101 Africa, where he drives organisational growth, trains executive members, and coordinates strategic partnership proposals for one of Africa's emerging Web3 and blockchain education initiatives.",
+    fullBio:
+      "Daniel Okon is the Chief Technology Officer of HolyDigits101 Africa, where he drives organisational growth, trains executive members, and coordinates strategic partnership proposals for one of Africa's emerging Web3 and blockchain education initiatives.  A PMP-certified Project Manager with over five years of cross-industry experience, Daniel combines executive leadership with deep operational expertise across the tech, industrial, food service, and public relations sectors. Holding a Bachelor of Science in Political Science and Public Administration from the University of Benin, Daniel has consistently operated at both strategic and ground levels — from designing safety compliance programs for 50+ workers at Yongxin Iron & Steel, to managing revenue pipelines and technical teams at Havilah Tech, to delivering strategic business recommendations as a Consultant at ChilTech. Notable among his achievements is a 40% increase in daily profit and 30% increase in monthly profit delivered during his supervisory role at Yummies by Igho — a testament to his results-driven approach to business and people management. Beyond his professional engagements, Daniel is a recognised alumnus of the Young African Leadership Initiative (YALI) and an active member of Junior Chambers International (JCI) and Man O' War — reflecting a sustained commitment to leadership development, community impact, and national service.",
+    image:
+      "https://res.cloudinary.com/dvjiszahi/image/upload/v1781043913/IMG_4966.JPG_1_zvt240.jpg",
+    imageClass: "h-[405px]",
   },
 ];
 
