@@ -666,11 +666,11 @@ export default function Scout() {
                 </div>
 
                 {/* Map Mock Graphic Placeholder Box */}
-                <div className="border border-dashed border-green-700/30 bg-green-900/5 rounded-2xl h-40 flex flex-col items-center justify-center text-center p-4">
+                {/* <div className="border border-dashed border-green-700/30 bg-green-900/5 rounded-2xl h-40 flex flex-col items-center justify-center text-center p-4">
                   <MapPin className="text-green-500/40 animate-bounce mb-2" size={32} />
                   <span className="text-xs text-white/50 font-medium">Automatic GPS Location Tagging Active</span>
                   <span className="text-[10px] text-white/20 mt-0.5">Latitude / Longitude coordinates logs will verify upon submission</span>
-                </div>
+                </div> */}
 
                 {/* Additional Optional Notes Input */}
                 <div>
