@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { Users, Moon, Sun, Rocket, ChevronDown } from 'lucide-react';
+import { Rocket, ChevronDown } from 'lucide-react';
 import { countryRegions, countries } from '../data/countryRegions';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import ReCAPTCHA from "react-google-recaptcha";
+import { api, AllowedRole } from '../utils/api';
+import { useToast } from '../components/Toast';
+import { Modal } from '../components/Modal';
+import { useRecaptcha, validateCaptchaToken } from '../components/RecaptchaField';
 
 
 
@@ -60,14 +63,15 @@ const departments = [
 ];
 
 function Waitlist() {
-  const [darkMode, setDarkMode] = useState(true);
+  const { toast } = useToast();
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [darkMode] = useState(true);
   const [selectedCountryCode, setSelectedCountryCode] = useState(countries.find(c => c.name === 'Nigeria') || countries[0]);
   const [expandedDepts, setExpandedDepts] = useState<number[]>([]);
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
-  const [captchaAnswer, setCaptchaAnswer] = useState('');
+  const [selectedRoles, setSelectedRoles] = useState<AllowedRole[]>([]);
+  const { getToken } = useRecaptcha();
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState(null);
-  const VITE_RECAPTCHA_SITE_KEY = import.meta?.env?.VITE_RECAPTCHA_SITE_KEY;
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -89,7 +93,9 @@ function Waitlist() {
 
   const toggleRole = (role: string) => {
     setSelectedRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+      prev.includes(role as AllowedRole)
+        ? prev.filter((r) => r !== role)
+        : [...prev, role as AllowedRole]
     );
   };
 
@@ -106,7 +112,7 @@ function Waitlist() {
   
       // 3 = Wednesday, 4 = Thursday, 0 = Sunday
       if (day === 3 || day === 4 || day === 0) {
-        alert("Wednesdays, Thursdays and Sundays are not available.");
+        toast.error("Wednesdays, Thursdays, and Sundays are not available.");
         return;
       }
     }
@@ -114,24 +120,65 @@ function Waitlist() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!captchaToken) {
-      alert("Please solve the captcha correctly");
-      return;
-    }
+    setSubmitting(true);
+    try {
+      const captchaToken = await getToken('waitlist');
+      if (!validateCaptchaToken(captchaToken, toast.error)) return;
 
-    if (!agreedToTerms) {
-      alert('Please agree to the Terms & Conditions');
-      return;
+      const payload = {
+        fullName: formData.fullName,
+        email: formData.email,
+        country: formData.country,
+        region: formData.region,
+        phone: `${selectedCountryCode.code} ${formData.phone}`,
+        postalCode: formData.postalCode,
+        motivation: formData.motivation,
+        preferredDate: formData.preferredDate,
+        preferredTime: formData.preferredTime,
+        selectedRoles,
+        captchaToken,
+      };
+
+      if (!agreedToTerms) {
+        toast.error('Please agree to the Terms & Conditions');
+        return;
+      }
+
+      const response = await api.submitWaitlist(payload);
+
+      if (response.success) {
+        setIsSuccessModalOpen(true);
+        // Reset form data
+        setFormData({
+          fullName: '',
+          email: '',
+          country: 'Nigeria',
+          region: '',
+          phone: '',
+          postalCode: '',
+          motivation: '',
+          preferredDate: '',
+          preferredTime: '',
+        });
+        setSelectedRoles([]);
+        setAgreedToTerms(false);
+      } else {
+        toast.error(response.message || 'Failed to submit application. Please try again.');
+      }
+
+    } catch (error: any) {
+      console.error('Error submitting form:', error);
+      if (error.name === 'ZodError') {
+        const errorMessages = error.issues.map((err: any) => err.message).join('\n');
+        toast.error(`Validation Error:\n${errorMessages}`);
+      } else {
+        toast.error(error.message || 'An error occurred. Please try again later.');
+      }
+    } finally {
+      setSubmitting(false);
     }
-    if (selectedRoles.length === 0) {
-      alert('Please select at least one department/role');
-      return;
-    }
-    
-    console.log('Form submitted:', { ...formData, selectedRoles, selectedCountryCode });
-    alert('Application submitted successfully! Our executive team will contact you within 3 business days.');
   };
 
   return (
@@ -250,6 +297,11 @@ function Waitlist() {
                         handleInputChange(e);
                         // Reset region when country changes
                         setFormData(prev => ({ ...prev, region: '' }));
+                        // Automatically update the country code prefix
+                        const matchedCountry = countries.find(c => c.name === e.target.value);
+                        if (matchedCountry) {
+                          setSelectedCountryCode(matchedCountry);
+                        }
                       }}
                       className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
                         darkMode 
@@ -548,39 +600,7 @@ function Waitlist() {
                 {/* Final Section */}
                 <div className={`border-t pt-8 space-y-6 ${darkMode ? 'border-yellow-500/10' : 'border-gray-200'}`}>
                   {/* Captcha */}
-                  <ReCAPTCHA
-                    sitekey={VITE_RECAPTCHA_SITE_KEY}
-                    onChange={(token) => setCaptchaToken(token)}
-                    className="g-captcha"
-                  />
-                  {/* <div>
-                    <label className={`block text-sm font-medium mb-2 ${
-                      darkMode ? 'text-gray-300' : 'text-gray-700'
-                    }`}>
-                      Human Verification <span className={darkMode ? 'text-yellow-400' : 'text-yellow-600'}>*</span>
-                    </label>
-                    <div className="flex items-center space-x-4">
-                      <div className={`px-4 py-3 border rounded-lg font-mono text-lg ${
-                        darkMode 
-                          ? 'bg-yellow-500/10 border-yellow-500/30 text-white' 
-                          : 'bg-yellow-50 border-yellow-200 text-gray-900'
-                      }`}>
-                        4 + 5 = ?
-                      </div>
-                      <input
-                        type="number"
-                        required
-                        value={captchaAnswer}
-                        onChange={(e) => setCaptchaAnswer(e.target.value)}
-                        className={`w-24 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 text-center transition-colors ${
-                          darkMode 
-                            ? 'bg-black/40 border-yellow-500/20 focus:ring-yellow-500/50 focus:border-yellow-500 text-white' 
-                            : 'bg-white border-gray-300 focus:ring-yellow-500/50 focus:border-yellow-500 text-gray-900'
-                        }`}
-                        placeholder="?"
-                      />
-                    </div>
-                  </div> */}
+
 
                   {/* Terms Checkbox */}
                   <label className="flex items-start space-x-3 cursor-pointer group">
@@ -612,13 +632,16 @@ function Waitlist() {
                   {/* Submit Button */}
                   <button
                     type="submit"
+                    disabled={submitting}
                     className={`w-full font-bold py-4 px-8 rounded-lg transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center space-x-2 text-lg ${
+                      submitting ? 'opacity-50 cursor-not-allowed' : ''
+                    } ${
                       darkMode 
                         ? 'bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-amber-500 hover:to-yellow-500 text-black shadow-yellow-500/30' 
                         : 'bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-amber-600 hover:to-yellow-600 text-white shadow-yellow-600/30'
                     }`}
                   >
-                    <span>Submit Executive Application</span>
+                    <span>{submitting ? 'Submitting Application...' : 'Submit Executive Application'}</span>
                     <Rocket className="w-6 h-6" />
                   </button>
                 </div>
@@ -634,6 +657,14 @@ function Waitlist() {
           <Footer />
         </div>
       </div>
+      <Modal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        title="Application Received!"
+        type="success"
+      >
+        Your waitlist application for the Executive Movement has been submitted successfully. Our team will contact you within 3 business days to arrange your interview.
+      </Modal>
     </div>
   );
 }

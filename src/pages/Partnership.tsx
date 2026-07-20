@@ -12,10 +12,16 @@ import { useMemo, useState } from 'react';
 
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { useRecaptcha, validateCaptchaToken } from '../components/RecaptchaField';
+import { useToast } from '../components/Toast';
+import { api, partnershipSchema } from '../utils/api';
 
 export default function Partnership() {
+  const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
+  const { getToken } = useRecaptcha();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // add this inside the component, before return()
 
@@ -247,37 +253,109 @@ export default function Partnership() {
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (e.target.files) {
-      setFiles(Array.from(e.target.files));
+      const selectedFiles = Array.from(e.target.files);
+      const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+
+      const oversizedFiles = selectedFiles.filter(file => file.size > MAX_SIZE);
+      if (oversizedFiles.length > 0) {
+        const fileNames = oversizedFiles.map(f => f.name).join(', ');
+        toast.error(`The following files exceed the 10MB limit: ${fileNames}. Please upload files under 10MB.`);
+        e.target.value = ''; // Reset input selection
+        return;
+      }
+
+      setFiles(selectedFiles);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const formData = new FormData(e.currentTarget);
+    const captchaToken = await getToken('partnership');
+    if (!validateCaptchaToken(captchaToken, toast.error)) return;
 
-    const payload = {
-      fullName: formData.get('fullName'),
-      organization: formData.get('organization'),
-      email: formData.get('email'),
-      phone: formData.get('phone'),
-      country: formData.get('country'),
-      partnershipType: formData.get('partnershipType'),
-      proposal: formData.get('proposal'),
-      documents: files.map((file) => ({
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      })),
+    const targetForm = e.currentTarget;
+    const formData = new FormData(targetForm);
+
+    const rawPayload = {
+      fullName: formData.get('fullName') as string || '',
+      organization: formData.get('organization') as string || '',
+      email: formData.get('email') as string || '',
+      phone: formData.get('phone') as string || '',
+      country: formData.get('country') as string || '',
+      partnershipType: formData.get('partnershipType') as string || '',
+      proposal: formData.get('proposal') as string || '',
+      captchaToken,
     };
 
-    console.log('Partnership Application Submitted:', payload);
+    setSubmitting(true);
+    try {
+      // Validate inputs client-side first using Zod
+      const parsedData = partnershipSchema.parse({
+        ...rawPayload,
+        documents: files.map((file) => ({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+        })),
+      });
 
-    // TODO: send to backend API
+      // Step 1: Submit core partnership application details
+      const response = await api.submitPartnership({
+        fullName: parsedData.fullName,
+        organization: parsedData.organization,
+        email: parsedData.email,
+        phone: parsedData.phone,
+        country: parsedData.country,
+        partnershipType: parsedData.partnershipType,
+        proposal: parsedData.proposal,
+        captchaToken: parsedData.captchaToken,
+      });
 
-    e.currentTarget.reset();
-    setFiles([]);
-    setShowSuccessModal(true);
+      if (response.success && response.data?.id) {
+        const partnershipId = response.data.id;
+
+        // Step 2: Upload files if any are attached
+        if (files.length > 0) {
+          const submissionData = new FormData();
+          submissionData.append('partnershippid', partnershipId);
+          for (const file of files) {
+            submissionData.append('file', file);
+          }
+
+          const uploadResponse = await api.uploadPartnershipDocs(submissionData);
+          if (uploadResponse.success && uploadResponse.data) {
+            const documents = Array.isArray(uploadResponse.data)
+              ? uploadResponse.data
+              : [uploadResponse.data];
+
+            const saveResponse = await api.savePartnershipDocs(partnershipId, documents);
+            if (!saveResponse.success) {
+              toast.error(saveResponse.message || 'Application submitted, but failed to save document attachment references.');
+            }
+          } else {
+            toast.error(uploadResponse.message || 'Application submitted, but supporting document uploads failed.');
+          }
+        }
+
+        // Complete success handling
+        targetForm.reset();
+        setFiles([]);
+        setShowSuccessModal(true);
+      } else {
+        toast.error(response.message || 'Failed to submit application. Please try again.');
+      }
+    } catch (error: any) {
+      console.error('Error submitting partnership:', error);
+      if (error.name === 'ZodError') {
+        const errorMessages = error.issues.map((err: any) => err.message).join('\n');
+        toast.error(`Validation Error:\n${errorMessages}`);
+      } else {
+        toast.error(error.message || 'An error occurred. Please try again later.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -608,6 +686,8 @@ export default function Partnership() {
                 )}
               </div>
 
+
+
               {/* Terms */}
               <div className="flex items-start space-x-3">
                 <input
@@ -634,10 +714,13 @@ export default function Partnership() {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  disabled={submitting}
                   type="submit"
-                  className="w-full px-8 py-4 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold rounded-lg hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] transition-all duration-300 flex items-center justify-center group"
+                  className={`w-full px-8 py-4 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold rounded-lg hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] transition-all duration-300 flex items-center justify-center group ${
+                    submitting ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
-                  Submit Application
+                  {submitting ? 'Submitting...' : 'Submit Application'}
 
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform duration-300" />
                 </motion.button>

@@ -1,72 +1,140 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowRight, 
-  ArrowLeft,
   Check, 
   AlertCircle, 
   Building, 
-  MapPin, 
   PlusCircle, 
-  CheckCircle2, 
-  Lock
+  LogOut,
+  Mail,
+  ShieldCheck,
+  User,
+  ClipboardList,
+  Clock,
+  Award,
+  Lock,
+  Plus,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  XCircle
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { countryRegions, countries } from '@/data/countryRegions';
+import { api } from '../utils/api';
+import { useToast } from '../components/Toast';
+import { useRecaptcha, validateCaptchaToken } from '../components/RecaptchaField';
 
-// Error interface for validation
-interface FormErrors {
-  name?: boolean;
-  email?: boolean;
-  phone?: boolean;
-  country?: boolean;
-  state?: boolean;
-  address?: boolean;
-  consent?: boolean;
-  schoolName?: boolean;
-  schoolType?: boolean;
-  contactRole?: boolean;
-  schoolAddress?: boolean;
-  estimatedStudents?: boolean;
-  schoolKnowledge?: boolean;
-  contactPersonName?: boolean;
-  contactPhone?: boolean;
-  contactEmail?: boolean;
-}
+type PortalState = 'EMAIL_ENTRY' | 'OTP_VERIFY' | 'PROFILE_REGISTER' | 'DASHBOARD';
+
+// Global flag to survive React StrictMode unmount/remount dev cycles
+let globalVerificationInitiated = false;
 
 export default function Scout() {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [darkMode, setDarkMode] = useState(true);
+  const { toast } = useToast();
+  const { getToken } = useRecaptcha();
+  
+  // Navigation & Page State
+  const [portalState, setPortalState] = useState<PortalState>('EMAIL_ENTRY');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showRecommendModal, setShowRecommendModal] = useState(false);
 
-  // Form Field States
-  const [formData, setFormData] = useState({
+  // Authentications states
+  const [email, setEmail] = useState('');
+  const [otpToken, setOtpToken] = useState('');
+
+  // Profile data of verified scout
+  const [scoutProfile, setScoutProfile] = useState<any>(null);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [metricsData, setMetricsData] = useState({
+    total_recommended: 0,
+    approved: 0,
+    total_pending: 0,
+    rejected: 0,
+  });
+
+  // Search, Filter & Pagination states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 1;
+
+  // Debounce: wait 400ms after user stops typing before firing the fetch
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [searchTerm]);
+
+  // Metrics come from server-side statusCounts facet — accurate across all pages
+  const dashboardMetrics = metricsData;
+
+  // totalPages is driven by the server-returned total count
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  // All filtering is server-side — recommendations is already filtered
+  const paginatedRecommendations = recommendations;
+
+  // Profile Form state (New Scouts)
+  const [profileForm, setProfileForm] = useState({
     name: '',
-    email: '',
-    countryCode: '+234',
     phone: '',
-    country: '',
+    countryCode: '+234',
+    country: 'Nigeria',
     state: '',
     address: '',
-    consent: false,
+    consent: false
+  });
+  const [profileErrors, setProfileErrors] = useState<any>({});
+
+  // School Recommendation Form state (Dashboard Modal)
+  const [recommendForm, setRecommendForm] = useState({
     schoolName: '',
-    contactPersonName: '',
-    contactPhone: '',
-    contactEmail: '',
     schoolType: '',
     contactRole: '',
     schoolAddress: '',
     estimatedStudents: '',
     schoolKnowledge: '',
+    contactPersonName: '',
+    contactPhone: '',
+    contactEmail: '',
     notes: ''
   });
+  const [recommendErrors, setRecommendErrors] = useState<any>({});
 
-  // Background items array
+  // Floating particles
   const [particles, setParticles] = useState<{ id: number; left: string; size: string; duration: string; delay: string; opacity: number }[]>([]);
 
+  // Check for URL query params (magic link) or stored token auto-login
   useEffect(() => {
-    // Generate background floating particles dynamically
+    const params = new URLSearchParams(window.location.search);
+    const urlEmail = params.get('email');
+    const urlToken = params.get('token');
+
+    if (urlEmail && urlToken) {
+      if (globalVerificationInitiated) return;
+      globalVerificationInitiated = true;
+      handleVerifyMagicLink(urlEmail, urlToken);
+    } else {
+      const token = localStorage.getItem('scout_token');
+      if (token) {
+        loadProfileAndDashboard();
+      }
+    }
+  }, []);
+
+  // Generate background particles
+  useEffect(() => {
     const newParticles = Array.from({ length: 25 }).map((_, i) => ({
       id: i,
       left: `${Math.random() * 100}%`,
@@ -78,127 +146,289 @@ export default function Scout() {
     setParticles(newParticles);
   }, []);
 
-  // Update State list options whenever country choice shifts
+  // Sync profile form countryCode automatically when country changes
   useEffect(() => {
-    setFormData(prev => ({ ...prev, state: '' }));
-  }, [formData.country]);
+    const matchedCountry = countries.find(c => c.name === profileForm.country);
+    if (matchedCountry) {
+      setProfileForm(prev => ({
+        ...prev,
+        countryCode: matchedCountry.code,
+        state: '' // Reset region/state when country changes
+      }));
+    }
+  }, [profileForm.country]);
 
-  // Validation Rules
-  const validateStep1 = () => {
-    const newErrors: FormErrors = {};
-    const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // Helper for recommendations fetching
+  const fetchRecommendations = async () => {
+    try {
+      const skip = (currentPage - 1) * pageSize;
+      const recommendationsRes = await api.getScoutRecommendations({
+        search: debouncedSearchTerm.trim() || undefined,
+        status: statusFilter !== 'ALL' ? statusFilter : undefined,
+        page: currentPage,
+        limit: pageSize,
+        skip,
+      });
 
-    if (formData.name.trim().split(' ').filter(w => w).length < 2) newErrors.name = true;
-    if (!emailRx.test(formData.email.trim())) newErrors.email = true;
-    if (formData.phone.replace(/\D/g, '').length < 7) newErrors.phone = true;
-    if (!formData.country) newErrors.country = true;
-    if (!formData.state) newErrors.state = true;
-    if (formData.address.trim().length < 5) newErrors.address = true;
-    if (!formData.consent) newErrors.consent = true;
+      if (recommendationsRes.success && recommendationsRes.data) {
+        const rawData = recommendationsRes.data;
+        // $facet returns: [{ data, filteredCount, globalMetrics }]
+        const facet = Array.isArray(rawData) && rawData.length > 0 ? rawData[0] : rawData;
 
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length === 0) {
-      setStep(2);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Paginated records for the current page
+        const list: any[] = Array.isArray(facet?.data) ? facet.data : [];
+
+        // Total count after search+status filter (drives pagination)
+        const filteredTotal: number = facet?.filteredCount?.[0]?.count ?? list.length;
+
+        // Global metrics — run before any search/status filter, always reflects all scout records
+        const globalMetricsArr: { _id: string; count: number }[] =
+          Array.isArray(facet?.globalMetrics) ? facet.globalMetrics : [];
+
+        const globalTotal = globalMetricsArr.reduce((sum, s) => sum + s.count, 0);
+
+        const getGlobal = (...labels: string[]) =>
+          globalMetricsArr
+            .filter((s) => labels.map((l) => l.toLowerCase()).includes(s._id?.toLowerCase()))
+            .reduce((sum, s) => sum + s.count, 0);
+
+        setMetricsData({
+          total_recommended: globalTotal,
+          approved: getGlobal('approved'),
+          total_pending: getGlobal('pending'),
+          rejected: getGlobal('rejected'),
+        });
+
+        setRecommendations(list);
+        setTotalCount(filteredTotal);
+
+      }
+    } catch (recErr) {
+      console.warn('Failed to load recommendations from server:', recErr);
     }
   };
 
-  const validateStep2 = () => {
-    const newErrors: FormErrors = {};
+  // Reset to page 1 when status filter changes
+  useEffect(() => {
+    if (portalState === 'DASHBOARD') {
+      setCurrentPage(1);
+    }
+  }, [statusFilter]);
 
-    if (formData.schoolName.trim().length < 3) newErrors.schoolName = true;
-    if (!formData.schoolType) newErrors.schoolType = true;
-    if (!formData.contactRole) newErrors.contactRole = true;
-    if (formData.schoolAddress.trim().length < 8) newErrors.schoolAddress = true;
-    if (!formData.estimatedStudents) newErrors.estimatedStudents = true;
-    if (!formData.schoolKnowledge) newErrors.schoolKnowledge = true;
-    if (!formData.contactPersonName) newErrors.contactPersonName = true;
-    if (!formData.contactEmail) newErrors.contactEmail = true;
-    if (!formData.contactPhone) newErrors.contactPhone = true;
+  // Refetch when portalState, page, search or status changes
+  useEffect(() => {
+    if (portalState === 'DASHBOARD') {
+      fetchRecommendations();
+    }
+  }, [portalState, currentPage, debouncedSearchTerm, statusFilter]);
 
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length === 0) {
-      setStep(3);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      setTimeout(() => {
-        launchConfetti();
-      }, 500);
+  // API Call Helpers
+  const loadProfileAndDashboard = async () => {
+    try {
+      setIsSubmitting(true);
+      const profileRes = await api.getScoutProfile();
+      if (profileRes.success && Array.isArray(profileRes.data) && profileRes.data.length > 0) {
+        const profile = profileRes.data[0];
+        setScoutProfile(profile);
+        setPortalState('DASHBOARD');
+        await fetchRecommendations();
+      } else {
+        // Token is valid but no scout profile registered in scouts collection
+        setProfileForm(prev => ({ ...prev, email: email.trim() }));
+        setPortalState('PROFILE_REGISTER');
+      }
+    } catch (err: any) {
+      console.error('Session validation failed:', err);
+      handleSignOut();
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  /* ─── Confetti ─── */
-  const launchConfetti = () => {
-    const container = document.getElementById('confettiContainer') as HTMLDivElement;
-    const colors = ['#EAB308','#15803d','#16a34a','#FDE047','#ffffff','#86efac'];
-    for (let i = 0; i < 60; i++) {
-      setTimeout(() => {
-        const div = document.createElement('div');
-        div.className = 'confetti';
-        div.style.cssText = `
-          left: ${Math.random()*100}%;
-          top: ${-10 + Math.random()*10}%;
-          background: ${colors[Math.floor(Math.random()*colors.length)]};
-          width: ${6+Math.random()*8}px;
-          height: ${6+Math.random()*8}px;
-          animation-duration: ${2+Math.random()*3}s;
-          animation-delay: ${Math.random()*0.5}s;
-          border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
-        `;
-        container.appendChild(div);
-        setTimeout(() => div.remove(), 4000);
-      }, i * 40);
+  const handleVerifyMagicLink = async (urlEmail: string, urlToken: string) => {
+    try {
+      setIsSubmitting(true);
+      // Clean up query parameters from browser URL address bar immediately
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      const res = await api.verifyScoutOtp(urlEmail, urlToken);
+      if (res.success && res.data && res.data.session_token) {
+        localStorage.setItem('scout_token', res.data.session_token);
+        setEmail(urlEmail.trim());
+        await loadProfileAndDashboard();
+        toast.success('Email verified successfully!');
+      }
+    } catch (err: any) {
+      toast.error('Magic link is invalid or has expired. Please request a new one.');
+      setPortalState('EMAIL_ENTRY');
+    } finally {
+      setIsSubmitting(false);
     }
-  }
-
-
-  const handleResetForm = () => {
-    setFormData({
-      name: '',
-      email: '',
-      countryCode: '+234',
-      phone: '',
-      country: '',
-      state: '',
-      address: '',
-      consent: false,
-      schoolName: '',
-      contactPersonName: '',
-      contactPhone: '',
-      contactEmail: '',
-      schoolType: '',
-      contactRole: '',
-      schoolAddress: '',
-      estimatedStudents: '',
-      schoolKnowledge: '',
-      notes: ''
-    });
-    setErrors({});
-    setStep(1);
   };
 
-  // Get current applicable state values array
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const captchaToken = await getToken('scout_otp');
+      if (!validateCaptchaToken(captchaToken, toast.error)) {
+        setIsSubmitting(false);
+        return;
+      }
+
+      const res = await api.sendScoutOtp(email.trim(), captchaToken);
+      if (res.success) {
+        toast.success('Verification code sent to your email!');
+        setPortalState('OTP_VERIFY');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to request code. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpToken.trim()) {
+      toast.error('Please enter the verification code.');
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      const res = await api.verifyScoutOtp(email.trim(), otpToken.trim());
+      if (res.success && res.data && res.data.session_token) {
+        localStorage.setItem('scout_token', res.data.session_token);
+        await loadProfileAndDashboard();
+        toast.success('Email verified successfully!');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Invalid or expired verification code.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRegisterProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileErrors({});
+    if (!profileForm.consent) {
+      toast.error('Please accept data processing consent to proceed.');
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      const res = await api.registerScout({
+        ...profileForm,
+        email: email.trim()
+      });
+      if (res.success && res.data) {
+        setScoutProfile(res.data);
+        setRecommendations([]);
+        toast.success('Welcome! Your scout profile is registered.');
+        setPortalState('DASHBOARD');
+      }
+    } catch (err: any) {
+      if (err.name === 'ZodError') {
+        const errorsMap: any = {};
+        err.issues.forEach((issue: any) => {
+          if (issue.path[0]) {
+            errorsMap[issue.path[0]] = true;
+          }
+        });
+        setProfileErrors(errorsMap);
+        toast.error('Profile form contains validation errors. Please check fields.');
+      } else {
+        toast.error(err.message || 'Failed to submit profile.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRecommendSchoolSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRecommendErrors({});
+    try {
+      setIsSubmitting(true);
+      const res = await api.submitScoutRecommendation(recommendForm);
+      if (res.success) {
+        toast.success('Recommendation submitted successfully.');
+        const recsRes = await api.getScoutRecommendations();
+        if (recsRes.success && recsRes.data) {
+          const rawData = recsRes.data;
+          const list = Array.isArray(rawData)
+            ? (rawData[0]?.recommendations || [])
+            : ((rawData as any)?.recommendations || []);
+          setRecommendations(list);
+        }
+        // Reset school recommendation form states
+        setRecommendForm({
+          schoolName: '',
+          schoolType: '',
+          contactRole: '',
+          schoolAddress: '',
+          estimatedStudents: '',
+          schoolKnowledge: '',
+          contactPersonName: '',
+          contactPhone: '',
+          contactEmail: '',
+          notes: ''
+        });
+        setShowRecommendModal(false);
+      }
+    } catch (err: any) {
+      if (err.name === 'ZodError') {
+        const errorsMap: any = {};
+        err.issues.forEach((issue: any) => {
+          if (issue.path[0]) {
+            errorsMap[issue.path[0]] = true;
+          }
+        });
+        setRecommendErrors(errorsMap);
+        toast.error('Form contains validation errors. Please resolve.');
+      } else {
+        toast.error(err.message || 'Failed to submit recommendation.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem('scout_token');
+    setScoutProfile(null);
+    setRecommendations([]);
+    setEmail('');
+    setOtpToken('');
+    setPortalState('EMAIL_ENTRY');
+    toast.success('Signed out successfully.');
+  };
+
   return (
     <div className="bg-[#0a0f0d] text-white min-h-screen overflow-x-hidden font-sans relative">
       
-      {/* ─── BACKGROUND LAYERS ─── */}
+      {/* BACKGROUND GRAPHIC ACCENTS */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/80 z-10" />
-        {/* Low opacity image background match */}
         <div className="absolute inset-0 opacity-5 bg-cover bg-center" style={{ backgroundImage: "url('https://images.pexels.com/photos/27769510/pexels-photo-27769510.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200')" }} />
-        
-        {/* Background Grid Accent */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(21,128,61,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(21,128,61,0.06)_1px,transparent_1px)] bg-[size:60px_60px]" />
         
-        {/* Animated Orbs */}
-        <div className="absolute top-[-150px] left-[-150px] w-[500px] h-[500px] rounded-full bg-radial from-green-800/35 to-transparent blur-[80px] animate-pulse duration-[12s]" />
-        <div className="absolute top-[30%] right-[-100px] w-[400px] h-[400px] rounded-full bg-radial from-yellow-500/20 to-transparent blur-[80px] animate-pulse duration-[8s]" />
+        {/* Animated gradients */}
+        <div className="absolute top-[-150px] left-[-150px] w-[500px] h-[500px] rounded-full bg-radial from-green-800/30 to-transparent blur-[85px] animate-pulse duration-[14s]" />
+        <div className="absolute top-[30%] right-[-100px] w-[400px] h-[400px] rounded-full bg-radial from-yellow-500/15 to-transparent blur-[85px] animate-pulse duration-[9s]" />
         
-        {/* Dynamic Particles */}
+        {/* Dynamic floating sparkles */}
         <div className="absolute inset-0">
           {particles.map(p => (
             <span
               key={p.id}
-              className="absolute bg-yellow-500/60 rounded-full animate-bounce"
+              className="absolute bg-yellow-500/50 rounded-full"
               style={{
                 left: p.left,
                 bottom: '0px',
@@ -214,174 +444,204 @@ export default function Scout() {
 
       <Navbar />
 
-      {/* ─── MAIN APP CONTAINER ─── */}
-      <main className="relative z-10 max-w-2xl mx-auto px-4 py-24 min-h-screen flex flex-col justify-center">
+      <main className="relative z-10 max-w-5xl mx-auto px-4 py-28 min-h-screen flex flex-col justify-start">
         
-        {/* Header Branding */}
-        {step !== 3 && (
-          <div className="text-center mb-8">
-            {/* <div className="flex items-center justify-center gap-2 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.4)]">
-                <span className="text-black font-extrabold font-['Orbitron'] text-xl">H</span>
-              </div>
-              <span className="font-['Orbitron'] tracking-wider text-sm font-semibold uppercase text-yellow-500">
-                HolyDigits101
-              </span>
-            </div> */}
-            <h1 className="text-3xl md:text-4xl font-bold font-['Sora'] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-emerald-500">
-              Volunteer Scout Portal
-            </h1>
-            <p className="text-gray-400 text-sm max-w-md mx-auto mt-2">
-              Help us identify and empower schools across Africa with next-gen Web3 and digital computing infrastructure.
-            </p>
-
-            {/* PROGRESS CONTROLLER DISPLAY */}
-            <div className="mt-8 flex items-center justify-between relative max-w-sm mx-auto">
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[3px] bg-white/10 rounded-full z-0">
-                <div 
-                  className="h-full bg-gradient-to-r from-green-700 to-yellow-500 transition-all duration-500 ease-out"
-                  style={{ width: step === 1 ? '50%' : '100%' }}
-                />
-              </div>
-
-              {/* Step 1 Node */}
-              <div className="relative z-10 flex flex-col items-center gap-2">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 ${
-                  step > 1 ? 'bg-yellow-400 border-yellow-500 text-black' : 'bg-green-700 border-green-600 text-white shadow-[0_0_15px_rgba(21,128,61,0.5)]'
-                }`}>
-                  {step > 1 ? <Check size={14} strokeWidth={3} /> : '1'}
-                </div>
-                <span className="text-[11px] font-semibold tracking-wide uppercase text-gray-400">Scout Info</span>
-              </div>
-
-              {/* Step 2 Node */}
-              <div className="relative z-10 flex flex-col items-center gap-2">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 ${
-                  step === 2 
-                    ? 'bg-green-700 border-green-600 text-white shadow-[0_0_15px_rgba(21,128,61,0.5)]' 
-                    : step > 2 ? 'bg-yellow-400 border-yellow-500 text-black' : 'bg-white/5 border-white/10 text-white/40'
-                }`}>
-                  '2'
-                </div>
-                <span className="text-[11px] font-semibold tracking-wide uppercase text-gray-400">School Details</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ─── SCENARIO SLIDES CONTAINER ─── */}
         <AnimatePresence mode="wait">
-          
-          {/* STEP 1: SCOUT INFORMATION */}
-          {step === 1 && (
+          {/* STATE 1: EMAIL ENTRY CARD */}
+          {portalState === 'EMAIL_ENTRY' && (
             <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="bg-[#0a0f0d]/75 backdrop-blur-2xl border border-green-800/30 rounded-3xl p-6 md:p-8 shadow-2xl"
+              key="email_entry"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              className="max-w-md w-full mx-auto bg-[#0a0f0d]/75 backdrop-blur-2xl border border-green-800/20 rounded-3xl p-8 shadow-2xl mt-12"
             >
-              <div className="flex items-center gap-2 pb-4 mb-6 border-b border-white/5">
-                <Building className="text-yellow-500" size={20} />
-                <h2 className="text-xl font-bold font-['Sora'] text-white">Scout Personal Profile</h2>
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-green-700 to-green-600 rounded-2xl mb-4 border border-green-500/30 shadow-[0_0_15px_rgba(22,163,74,0.2)]">
+                  <ShieldCheck className="text-yellow-400" size={32} />
+                </div>
+                <h1 className="text-2xl font-bold font-sora tracking-tight text-white mb-2">
+                  Volunteer Scout Portal
+                </h1>
+                <p className="text-gray-400 text-xs leading-relaxed">
+                  Join our mission to identify and empower schools across Africa with next-gen Web3 and digital computing labs.
+                </p>
               </div>
 
-              <div className="space-y-5">
-                {/* Full Name */}
+              <form onSubmit={handleSendOtp} className="space-y-4">
                 <div>
-                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Full Name *</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. Amara Okafor"
-                    value={formData.name}
-                    onChange={e => setFormData({...formData, name: e.target.value})}
-                    className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 focus:bg-green-950/10 ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
-                  />
-                  {errors.name && (
-                    <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Please enter your full name (at least 2 words)</p>
-                  )}
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Email Address *</label>
-                  <input 
-                    type="email" 
-                    placeholder="e.g. amara@example.com"
-                    value={formData.email}
-                    onChange={e => setFormData({...formData, email: e.target.value})}
-                    className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 focus:bg-green-950/10 ${errors.email ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
-                  />
-                  {errors.email && (
-                    <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Please enter a valid email address</p>
-                  )}
-                </div>
-
-                {/* Phone Number */}
-                <div>
-                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Phone Number *</label>
-                  <div className="flex gap-2">
-                    <select
-                      required
-                      value={formData.countryCode} 
-                      onChange={e => setFormData({...formData, countryCode: e.target.value})}
-                      className="bg-white/5 border border-white/10 rounded-xl px-3 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700"
-                    >
-                      {countries.map((country) => (
-                        <option key={`code-${country.name}`} value={country.name}>
-                          {country.flag} {country.name} ({country.code})
-                        </option>
-                      ))}
-                    </select>
+                  <label className="block text-[10px] font-bold tracking-widest text-white/50 uppercase mb-2">Scout Email Address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
                     <input 
-                      type="tel" 
-                      placeholder="8012345678"
-                      value={formData.phone}
-                      onChange={e => setFormData({...formData, phone: e.target.value})}
-                      className={`flex-1 bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 focus:bg-green-950/10 ${errors.phone ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
+                      type="email"
+                      required
+                      placeholder="e.g. name@example.com"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      disabled={isSubmitting}
+                      className="w-full bg-white/5 border border-white/15 rounded-xl pl-12 pr-4 py-3.5 text-sm text-emerald-55 outline-none focus:border-green-600 focus:bg-green-950/10 transition-all duration-200"
                     />
                   </div>
-                  {errors.phone && (
-                    <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Valid phone number required</p>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="cursor-pointer w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl py-3.5 flex items-center justify-center gap-2 transition transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span>Get Magic Verification Code</span>
+                      <ArrowRight size={16} />
+                    </>
                   )}
+                </button>
+              </form>
+
+              <p className="text-center text-white/20 text-[9px] mt-4 uppercase tracking-wider flex items-center justify-center gap-1">
+                <Lock size={9} /> Secure Encryption Assured
+              </p>
+            </motion.div>
+          )}
+
+          {/* STATE 2: VERIFICATION OTP CARD */}
+          {portalState === 'OTP_VERIFY' && (
+            <motion.div
+              key="otp_verify"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              className="max-w-md w-full mx-auto bg-[#0a0f0d]/75 backdrop-blur-2xl border border-green-800/20 rounded-3xl p-8 shadow-2xl mt-12"
+            >
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 rounded-2xl mb-4 border border-yellow-500/25">
+                  <Mail className="text-yellow-400" size={28} />
+                </div>
+                <h1 className="text-2xl font-bold font-sora tracking-tight text-white mb-2">
+                  Verify Your Identity
+                </h1>
+                <p className="text-gray-400 text-xs leading-relaxed max-w-xs mx-auto">
+                  We've sent a magic verification code to your email <span className="text-white font-medium">{email}</span>.
+                </p>
+              </div>
+
+
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-bold tracking-widest text-white/50 uppercase mb-2">Magic Verification Token</label>
+                  <input 
+                    type="text"
+                    required
+                    placeholder="Paste code here"
+                    value={otpToken}
+                    onChange={e => setOtpToken(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3.5 text-center text-sm font-mono text-emerald-55 outline-none focus:border-green-600 focus:bg-green-950/10 transition-all duration-200"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setPortalState('EMAIL_ENTRY')}
+                    className="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 font-semibold rounded-xl py-3.5 text-sm transition"
+                  >
+                    Change Email
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 cursor-pointer bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl py-3.5 text-sm flex items-center justify-center gap-1 transition disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <span>Verify Code</span>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          )}
+
+          {/* STATE 3: PROFILE REGISTRATION (NEW SCOUTS) */}
+          {portalState === 'PROFILE_REGISTER' && (
+            <motion.div
+              key="profile_register"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              className="max-w-xl w-full mx-auto bg-[#0a0f0d]/75 backdrop-blur-2xl border border-green-800/20 rounded-3xl p-6 md:p-8 shadow-2xl mt-6"
+            >
+              <div className="flex items-center gap-3 pb-4 mb-6 border-b border-white/5">
+                <User className="text-yellow-500" size={22} />
+                <div>
+                  <h2 className="text-xl font-bold font-sora text-white">Create Scout Profile</h2>
+                  <p className="text-gray-400 text-xs">Verify details to join the volunteer program</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleRegisterProfile} className="space-y-5">
+                {/* Full Name */}
+                <div>
+                  <label className="block text-[10px] font-bold tracking-widest text-white/70 uppercase mb-2">Full Name *</label>
+                  <input 
+                    type="text" 
+                    placeholder="Amara Okafor"
+                    value={profileForm.name}
+                    onChange={e => setProfileForm({...profileForm, name: e.target.value})}
+                    disabled={isSubmitting}
+                    className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-55 outline-none focus:border-green-600 focus:bg-green-950/10 transition-all ${profileErrors.name ? 'border-red-500' : 'border-white/10'}`}
+                  />
+                  {profileErrors.name && (
+                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={10} /> Valid full name required (first and last)</p>
+                  )}
+                </div>
+
+                {/* Email Address (Pre-filled and Locked) */}
+                <div>
+                  <label className="block text-[10px] font-bold tracking-widest text-white/40 uppercase mb-2">Email Address (Verified)</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" size={16} />
+                    <input 
+                      type="email" 
+                      readOnly
+                      value={email}
+                      className="w-full bg-white/5 opacity-50 border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-sm text-white/60 outline-none select-none cursor-not-allowed"
+                    />
+                  </div>
                 </div>
 
                 {/* Country and State Row Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Your Country *</label>
-                  <select
-                    name="country"
-                    required
-                    value={formData.country}
-                    onChange={e => setFormData({...formData, country: e.target.value})}
-                    className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 ${errors.country ? 'border-red-500' : 'border-white/10'}`}
-                  >
-                    {countries.map((country) => (
-                      <option key={country.name} value={country.name}>
-                        {country.flag} {country.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                    <label className={`block text-sm font-medium mb-2 ${
-                      darkMode ? 'text-gray-300' : 'text-gray-700'
-                    }`}>
-                      Region / State <span className={darkMode ? 'text-yellow-400' : 'text-yellow-600'}>*</span>
-                    </label>
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-widest text-white/70 uppercase mb-2">Country *</label>
                     <select
-                      name="region"
-                      required
-                      value={formData.state}
-                      onChange={e => setFormData({...formData, state: e.target.value})}
-                      disabled={!formData.country}
-                      className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 disabled:opacity-40 ${errors.state ? 'border-red-500' : 'border-white/10'}`}
+                      value={profileForm.country}
+                      onChange={e => setProfileForm({...profileForm, country: e.target.value})}
+                      disabled={isSubmitting}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-emerald-55 outline-none focus:border-green-600 transition-all"
                     >
-                      <option value="">
-                        Select {formData.country ? 'Region/State' : 'a country first'}
-                      </option>
-                      {formData.country && countryRegions[formData.country] && countryRegions[formData.country].map((region) => (
+                      {countries.map((country) => (
+                        <option key={country.name} value={country.name}>
+                          {country.flag} {country.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-widest text-white/70 uppercase mb-2">Region / State *</label>
+                    <select
+                      value={profileForm.state}
+                      onChange={e => setProfileForm({...profileForm, state: e.target.value})}
+                      disabled={isSubmitting || !profileForm.country}
+                      className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-55 outline-none focus:border-green-600 disabled:opacity-40 transition-all ${profileErrors.state ? 'border-red-500' : 'border-white/10'}`}
+                    >
+                      <option value="">Select state...</option>
+                      {profileForm.country && countryRegions[profileForm.country] && countryRegions[profileForm.country].map((region) => (
                         <option key={region} value={region}>
                           {region}
                         </option>
@@ -390,409 +650,610 @@ export default function Scout() {
                   </div>
                 </div>
 
-                {/* Permanent Contact Address */}
+                {/* Phone Number */}
                 <div>
-                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Your Residential Address *</label>
-                  <input 
-                    type="text" 
-                    placeholder="Street name, City, State"
-                    value={formData.address}
-                    onChange={e => setFormData({...formData, address: e.target.value})}
-                    className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 focus:bg-green-950/10 ${errors.address ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
-                  />
-                  {errors.address && (
-                    <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Full contact details required</p>
+                  <label className="block text-[10px] font-bold tracking-widest text-white/70 uppercase mb-2">Phone Number *</label>
+                  <div className="flex gap-2">
+                    <span className="bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white/60 flex items-center justify-center font-semibold">
+                      {profileForm.countryCode}
+                    </span>
+                    <input 
+                      type="tel" 
+                      placeholder="8012345678"
+                      value={profileForm.phone}
+                      onChange={e => setProfileForm({...profileForm, phone: e.target.value})}
+                      disabled={isSubmitting}
+                      className={`flex-1 bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-55 outline-none focus:border-green-600 focus:bg-green-950/10 transition-all ${profileErrors.phone ? 'border-red-500' : 'border-white/10'}`}
+                    />
+                  </div>
+                  {profileErrors.phone && (
+                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={10} /> Valid phone number required</p>
                   )}
                 </div>
 
-                {/* Checkbox Consent Element */}
+                {/* Residential Address */}
+                <div>
+                  <label className="block text-[10px] font-bold tracking-widest text-white/70 uppercase mb-2">Contact Address *</label>
+                  <input 
+                    type="text" 
+                    placeholder="Street name, City, State"
+                    value={profileForm.address}
+                    onChange={e => setProfileForm({...profileForm, address: e.target.value})}
+                    disabled={isSubmitting}
+                    className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-55 outline-none focus:border-green-600 focus:bg-green-950/10 transition-all ${profileErrors.address ? 'border-red-500' : 'border-white/10'}`}
+                  />
+                  {profileErrors.address && (
+                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={10} /> Complete residential address required</p>
+                  )}
+                </div>
+
+                {/* Consent checkbox */}
                 <div className="pt-2">
                   <label className="flex items-start gap-3 select-none cursor-pointer group">
                     <input 
                       type="checkbox"
-                      checked={formData.consent}
-                      onChange={e => setFormData({...formData, consent: e.target.checked})}
-                      className="sr-only"
+                      id="scout-consent"
+                      checked={profileForm.consent}
+                      onChange={e => setProfileForm(prev => ({ ...prev, consent: e.target.checked }))}
+                      disabled={isSubmitting}
+                      className="peer sr-only"
                     />
-                    <div className={`w-[52px!important] h-[20px!important] rounded border flex items-center justify-center mt-0.5 transition-all ${
-                      formData.consent ? 'bg-gradient-to-br from-green-700 to-green-600 border-green-600 text-white' : 'border-white/20 bg-white/5 group-hover:border-white/40'
-                    }`}>
-                      {formData.consent && <Check size={12} strokeWidth={4} className="w-[20px!important] h-[20px!important]"/>}
+                    <div className="w-5 h-5 shrink-0 rounded-md border border-white/20 bg-white/5 flex items-center justify-center mt-0.5 transition-all peer-checked:bg-gradient-to-br peer-checked:from-green-600 peer-checked:to-green-500 peer-checked:border-green-500 peer-checked:text-white peer-disabled:opacity-50 group-hover:border-white/40 shadow-sm">
+                      {profileForm.consent && <Check size={12} strokeWidth={4} />}
                     </div>
-                    <span className="text-xs text-gray-400 leading-relaxed">
-                        I consent to HolyDigits101 collecting and processing my personal data in accordance with the 
-                        <a href="/privacy-policy">Privacy Policy</a>. 
-                        My data will be used solely for the volunteer scout programme and will not be shared with third parties without my explicit consent.
+                    <span className="text-[11px] text-gray-400 leading-relaxed">
+                      I consent to HolyDigits101 collecting and processing my data in accordance with the 
+                      <a 
+                        href="/privacy-policy" 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()} 
+                        className="text-green-500 hover:underline mx-1"
+                      >
+                        Privacy Policy
+                      </a>. 
+                      My profile details will only be used to organize and credit my volunteer scout activities.
                     </span>
                   </label>
-                  {errors.consent && (
-                    <p className="text-red-300 text-xs mt-2 flex items-center gap-1"><AlertCircle size={12} /> You must check data consent to proceed</p>
-                  )}
                 </div>
-              </div>
 
-              {/* Action Buttons */}
-              <div className="mt-8 pt-4 border-t border-white/5">
-                <button
-                  type="button"
-                  onClick={validateStep1}
-                  className="cursor-pointer w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl py-4 flex items-center justify-center gap-2 shadow-lg shadow-green-900/40 transform transition hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  <span>Continue to School Information</span>
-                  <ArrowRight size={18} />
-                </button>
-                <p className="text-center text-white/20 text-[10px] mt-3 uppercase tracking-wider flex items-center justify-center gap-1">
-                  <Lock size={10} /> Encrypted Secure Transmission
-                </p>
-              </div>
+                <div className="flex gap-4 pt-4 border-t border-white/5">
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="bg-white/5 hover:bg-white/10 text-gray-300 font-semibold rounded-xl px-6 py-3.5 text-sm transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 cursor-pointer bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl py-3.5 text-sm flex items-center justify-center gap-1 transition transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <span>Complete Registration</span>
+                    )}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           )}
 
-          {/* STEP 2: SCHOOL DETAILS FORM */}
-          {step === 2 && (
+          {/* STATE 4: THE SCOUT DASHBOARD PORTAL */}
+          {portalState === 'DASHBOARD' && scoutProfile && (
             <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="bg-[#0a0f0d]/75 backdrop-blur-2xl border border-green-800/30 rounded-3xl p-6 md:p-8 shadow-2xl"
+              key="scout_dashboard"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-8 w-full mt-6"
             >
-              <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/5">
-                <div className="flex items-center gap-2">
-                  <Building className="text-yellow-500" size={20} />
+              {/* Dashboard Header Bar */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0a0f0d]/75 backdrop-blur-2xl border border-green-800/20 rounded-3xl p-6 shadow-2xl">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-700 to-green-600 rounded-2xl flex items-center justify-center border border-green-500/20">
+                    <User className="text-yellow-400" size={24} />
+                  </div>
                   <div>
-                    <h2 className="text-xl font-bold font-['Sora'] text-white">School Recommendation Data</h2>
-                    <p class="text-white/40 text-xs">Tell us about the school you're recommending</p>
+                    <h2 className="text-lg font-bold font-sora text-white flex items-center gap-2">
+                      {scoutProfile.name}
+                      <span className="text-[10px] px-2 py-0.5 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-full font-bold uppercase tracking-wider font-mono">
+                        Active Scout
+                      </span>
+                    </h2>
+                    <p className="text-gray-400 text-xs flex items-center gap-2">
+                      <span>{scoutProfile.email}</span>
+                      <span className="text-white/20">•</span>
+                      <span className="text-[10px] font-mono tracking-widest text-white/50">ID: HD-SCOUT-{scoutProfile.id?.slice(-6).toUpperCase()}</span>
+                    </p>
                   </div>
                 </div>
-                <button 
-                  onClick={() => setStep(1)}
-                  className="text-gray-400 hover:text-white flex items-center gap-1 text-xs transition"
-                >
-                  <ArrowLeft size={14} /> Back
-                </button>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => setShowRecommendModal(true)}
+                    className="cursor-pointer bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl px-5 py-3 text-xs md:text-sm flex items-center gap-2 transition transform hover:-translate-y-0.5"
+                  >
+                    <Plus size={16} />
+                    <span>Recommend School</span>
+                  </button>
+                  <button
+                    onClick={handleSignOut}
+                    className="p-3 bg-white/5 hover:bg-red-950/20 border border-white/10 hover:border-red-900/40 rounded-xl text-gray-400 hover:text-red-400 transition"
+                    title="Sign Out"
+                  >
+                    <LogOut size={16} />
+                  </button>
+                </div>
               </div>
 
-              <div className="space-y-5">
-                {/* School Name */}
-                <div>
-                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">School Official Name *</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. Greenfield Model Academy"
-                    value={formData.schoolName}
-                    onChange={e => setFormData({...formData, schoolName: e.target.value})}
-                    className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 focus:bg-green-950/10 ${errors.schoolName ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
-                  />
-                  {errors.schoolName ? (
-                    <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Please supply specific legal school title</p>
-                  ) : (
-                    <p className="text-white/30 text-[11px] mt-1">Please double-check proper spellings explicitly.</p>
-                  )}
-                </div>
-
-                {/* School Type & Contact Role Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">School Type *</label>
-                    <select
-                      value={formData.schoolType}
-                      onChange={e => setFormData({...formData, schoolType: e.target.value})}
-                      className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700 ${errors.schoolType ? 'border-red-500' : 'border-white/10'}`}
-                    >
-                      <option value="">Select type...</option>
-                      <option value="Primary">Primary Education</option>
-                      <option value="Secondary">Secondary / High School</option>
-                      <option value="Both">Combined (Primary & Secondary)</option>
-                      <option value="Tertiary">Tertiary / Vocational</option>
-                    </select>
-                    {errors.schoolType && (
-                      <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Selection required</p>
-                    )}
+              {/* Statistics Row Card Layout */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Total Recommended */}
+                <div className="bg-[#0a0f0d]/60 backdrop-blur-2xl border border-white/5 rounded-3xl p-6 flex items-center gap-4 relative overflow-hidden group">
+                  <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/25 rounded-2xl flex items-center justify-center text-emerald-400">
+                    <ClipboardList size={22} />
                   </div>
-
                   <div>
-                    <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Your Contact Relationship *</label>
-                    <select
-                      value={formData.contactRole}
-                      onChange={e => setFormData({...formData, contactRole: e.target.value})}
-                      className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700 ${errors.contactRole ? 'border-red-500' : 'border-white/10'}`}
-                    >
-                      <option value="">Select role...</option>
-                      <option value="Proprietor">Proprietor / Owner</option>
-                      <option value="Headmaster">Headmaster / Principal</option>
-                      <option value="Teacher">Academic Teacher</option>
-                      <option value="Parent">Parent / Guardian</option>
-                      <option value="Alumni">Alumni Member</option>
-                      <option value="Other">External Supporter</option>
-                    </select>
-                    {errors.contactRole && (
-                      <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Selection required</p>
-                    )}
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Recommended</p>
+                    <h3 className="text-2xl font-bold font-sora text-white">{dashboardMetrics.total_recommended}</h3>
+                  </div>
+                  <div className="absolute right-[-10px] bottom-[-10px] text-white/5 opacity-10 group-hover:scale-110 transition duration-300 pointer-events-none">
+                    <ClipboardList size={80} />
                   </div>
                 </div>
 
-                {/* School Size Category */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Estimated Student Count *</label>
-                        <select
-                            value={formData.estimatedStudents}
-                            onChange={e => setFormData({...formData, estimatedStudents: e.target.value})}
-                            className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700 ${errors.estimatedStudents ? 'border-red-500' : 'border-white/10'}`}
-                        >
-                            <option value="">Select population range...</option>
-                            <option value="under_100">Fewer than 100 students</option>
-                            <option value="100_300">100 – 300 students</option>
-                            <option value="300_800">300 – 800 students</option>
-                            <option value="above_800">More than 800 students</option>
-                        </select>
-                        {errors.estimatedStudents && (
-                            <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Range assignment required</p>
-                        )}
+                {/* Approved Schools */}
+                <div className="bg-[#0a0f0d]/60 backdrop-blur-2xl border border-white/5 rounded-3xl p-6 flex items-center gap-4 relative overflow-hidden group">
+                  <div className="w-12 h-12 bg-green-500/10 border border-green-500/25 rounded-2xl flex items-center justify-center text-green-400">
+                    <Award size={22} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Approved</p>
+                    <h3 className="text-2xl font-bold font-sora text-white">
+                      {dashboardMetrics.approved}
+                    </h3>
+                  </div>
+                  <div className="absolute right-[-10px] bottom-[-10px] text-white/5 opacity-10 group-hover:scale-110 transition duration-300 pointer-events-none">
+                    <Award size={80} />
+                  </div>
+                </div>
+
+                {/* Total Pending */}
+                <div className="bg-[#0a0f0d]/60 backdrop-blur-2xl border border-white/5 rounded-3xl p-6 flex items-center gap-4 relative overflow-hidden group">
+                  <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/25 rounded-2xl flex items-center justify-center text-amber-400">
+                    <Clock size={22} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Total Pending</p>
+                    <h3 className="text-2xl font-bold font-sora text-white">
+                      {dashboardMetrics.total_pending}
+                    </h3>
+                  </div>
+                  <div className="absolute right-[-10px] bottom-[-10px] text-white/5 opacity-10 group-hover:scale-110 transition duration-300 pointer-events-none">
+                    <Clock size={80} />
+                  </div>
+                </div>
+
+                {/* Rejected */}
+                <div className="bg-[#0a0f0d]/60 backdrop-blur-2xl border border-white/5 rounded-3xl p-6 flex items-center gap-4 relative overflow-hidden group">
+                  <div className="w-12 h-12 bg-red-500/10 border border-red-500/25 rounded-2xl flex items-center justify-center text-red-400">
+                    <XCircle size={22} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Rejected</p>
+                    <h3 className="text-2xl font-bold font-sora text-white">
+                      {dashboardMetrics.rejected}
+                    </h3>
+                  </div>
+                  <div className="absolute right-[-10px] bottom-[-10px] text-white/5 opacity-10 group-hover:scale-110 transition duration-300 pointer-events-none">
+                    <XCircle size={80} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Recommendations Table Layout */}
+              <div className="bg-[#0a0f0d]/75 backdrop-blur-2xl border border-white/5 rounded-3xl p-6 shadow-2xl space-y-6">
+                {/* Header & Controls */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/5">
+                  <div className="flex items-center gap-2">
+                    <Building className="text-yellow-500" size={18} />
+                    <h3 className="font-bold text-white text-base font-sora">Your Recommendations History</h3>
+                  </div>
+
+                  {/* Search and Filter */}
+                  <div className="flex items-center gap-3">
+                    {/* Live Search Input */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={14} />
+                      <input 
+                        type="text"
+                        placeholder="Search school or contact..."
+                        value={searchTerm}
+                        onChange={e => {
+                          setSearchTerm(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                        className="bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-green-500/50 transition w-48 sm:w-60"
+                      />
                     </div>
 
-                    <div>
-                        <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">How Do You Know This School? *</label>
-                        <select
-                            value={formData.schoolKnowledge}
-                            onChange={e => setFormData({...formData, schoolKnowledge: e.target.value})}
-                            className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700 ${errors.schoolKnowledge ? 'border-red-500' : 'border-white/10'}`}
-                        >
-                            <option value="">Select relationship...</option>
-                            <option value="Alumni">I'm an alumni</option>
-                            <option value="Parent">My child attends</option>
-                            <option value="Staff">I work there</option>
-                            <option value="Neighbor">I live nearby</option>
-                            <option value="Friend">Friend/Family attends</option>
-                            <option value="Community">Community member</option>
-                            <option value="Research">Found via research</option>
-                            <option value="Other">Other</option>
-                        </select>
-                        {errors.schoolKnowledge && (
-                            <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Range assignment required</p>
-                        )}
+                    {/* Status Filter */}
+                    <div className="relative">
+                      <select
+                        value={statusFilter}
+                        onChange={e => {
+                          setStatusFilter(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                        className="bg-[#0a0f0d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white/70 focus:outline-none focus:border-green-500/50 transition cursor-pointer appearance-none pr-8"
+                      >
+                        <option value="ALL">All Statuses</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="REJECTED">Rejected</option>
+                      </select>
+                      <Filter className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" size={12} />
                     </div>
+                  </div>
                 </div>
 
-                {/* Separation Bar Label Graphic */}
-                <div className="flex items-center gap-3 py-2">
-                  <div className="flex-1 h-px bg-white/5" />
-                  <span className="text-white/25 text-[10px] uppercase font-bold tracking-widest">School Contact Person</span>
-                  <div className="flex-1 h-px bg-white/5" />
-                </div>
-
-                {/* Contact Person Full Name */}
-                <div>
-                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Contact Full Name *</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. Amara Okafor"
-                    value={formData.contactPersonName}
-                    onChange={e => setFormData({...formData, contactPersonName: e.target.value})}
-                    className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 focus:bg-green-950/10 ${errors.contactPersonName ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
-                  />
-                  {errors.contactPersonName && (
-                    <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Please enter the contact person full name (at least 2 words)</p>
-                  )}
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Contact Email *</label>
-                  <input 
-                    type="email" 
-                    placeholder="e.g. amara@example.com"
-                    value={formData.contactEmail}
-                    onChange={e => setFormData({...formData, contactEmail: e.target.value})}
-                    className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 focus:bg-green-950/10 ${errors.contactEmail ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
-                  />
-                  {errors.contactEmail && (
-                    <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Please enter a valid email address</p>
-                  )}
-                </div>
-
-                {/* Phone Number */}
-                <div>
-                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">Contact Phone *</label>
-                  <div className="flex gap-2">
-                    <select
-                      required
-                      value={formData.countryCode} 
-                      onChange={e => setFormData({...formData, countryCode: e.target.value})}
-                      className="bg-white/5 border border-white/10 rounded-xl px-3 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700"
+                {recommendations.length === 0 ? (
+                  <div className="text-center py-16 border border-dashed border-white/5 rounded-2xl bg-white/[0.02]">
+                    <ClipboardList className="mx-auto text-white/10 mb-4" size={48} />
+                    <h4 className="text-white/60 font-semibold mb-1">No recommendations submitted yet</h4>
+                    <p className="text-white/30 text-xs max-w-xs mx-auto mb-6">
+                      You haven't recommended any school for digital infrastructure lab deployment yet. Let's get started!
+                    </p>
+                    <button 
+                      onClick={() => setShowRecommendModal(true)}
+                      className="cursor-pointer bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl px-5 py-3 text-xs flex items-center gap-2 mx-auto transition"
                     >
-                      {countries.map((country) => (
-                        <option key={`code-${country.name}`} value={country.name}>
-                          {country.flag} {country.name} ({country.code})
-                        </option>
-                      ))}
-                    </select>
-                    <input 
-                      type="tel" 
-                      placeholder="8012345678"
-                      value={formData.contactPhone}
-                      onChange={e => setFormData({...formData, contactPhone: e.target.value})}
-                      className={`flex-1 bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 focus:bg-green-950/10 ${errors.contactPhone ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
-                    />
+                      <Plus size={14} />
+                      <span>Submit Your First Recommendation</span>
+                    </button>
                   </div>
-                  {errors.contactPhone && (
-                    <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Valid phone number required</p>
-                  )}
-                </div>
-
-
-
-                {/* Separation Bar Label Graphic */}
-                <div className="flex items-center gap-3 py-2">
-                  <div className="flex-1 h-px bg-white/5" />
-                  <span className="text-white/25 text-[10px] uppercase font-bold tracking-widest">Location Details</span>
-                  <div className="flex-1 h-px bg-white/5" />
-                </div>
-
-                {/* School Address */}
-                <div>
-                  <label className="block text-[11px] font-bold tracking-widest text-white/70 uppercase mb-2">School Full Physical Address *</label>
-                  <textarea 
-                    rows={3}
-                    placeholder="e.g. 7 Education Close, Victoria Island, Lagos, Nigeria"
-                    value={formData.schoolAddress}
-                    onChange={e => setFormData({...formData, schoolAddress: e.target.value})}
-                    className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none transition-all focus:border-green-700 focus:bg-green-950/10 ${errors.schoolAddress ? 'border-red-500 focus:border-red-500' : 'border-white/10'}`}
-                  />
-                  {errors.schoolAddress && (
-                    <p className="text-red-300 text-xs mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> Accurate geometric address required</p>
-                  )}
-                </div>
-
-                {/* Map Mock Graphic Placeholder Box */}
-                {/* <div className="border border-dashed border-green-700/30 bg-green-900/5 rounded-2xl h-40 flex flex-col items-center justify-center text-center p-4">
-                  <MapPin className="text-green-500/40 animate-bounce mb-2" size={32} />
-                  <span className="text-xs text-white/50 font-medium">Automatic GPS Location Tagging Active</span>
-                  <span className="text-[10px] text-white/20 mt-0.5">Latitude / Longitude coordinates logs will verify upon submission</span>
-                </div> */}
-
-                {/* Additional Optional Notes Input */}
-                <div>
-                  <label className="block text-[11px] font-bold tracking-widest text-white/40 uppercase mb-2">
-                    Additional Notes <span className="text-white/20 font-normal italic">(Optional)</span>
-                  </label>
-                  <textarea 
-                    rows={4}
-                    placeholder="Provide details on current power conditions, computer lab setup availability, specific challenges, etc."
-                    value={formData.notes}
-                    onChange={e => setFormData({...formData, notes: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-700"
-                  />
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="mt-8 pt-4 border-t border-white/5">
-                <button
-                  type="button"
-                  onClick={validateStep2}
-                  className="cursor-pointer w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl py-4 flex items-center justify-center gap-2 shadow-lg shadow-green-900/40 transform transition hover:-translate-y-0.5"
-                >
-                  <span>Submit Scout Registration</span>
-                  <CheckCircle2 size={18} />
-                </button>
-                <p className="text-center text-white/25 text-[11px] mt-3">
-                  By submitting, you confirm all provided details are correct to your best knowledge.
-                </p>
-              </div>
-            </motion.div>
-          )}
-
-          {/* STEP 3: SUCCESS APPLICATION RECEIVED */}
-          <div id="confettiContainer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
-          {step === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="bg-[#0a0f0d]/90 border border-yellow-500/20 rounded-3xl p-8 md:p-12 text-center shadow-2xl relative overflow-hidden max-w-lg mx-auto"
-            >
-
-              {/* Pulsing Success Ring Icon */}
-              <div className="flex justify-center mb-6">
-                <div className="w-24 h-24 rounded-full border-4 border-green-600 flex items-center justify-center relative shadow-[0_0_30px_rgba(21,128,61,0.3)] bg-green-950/20">
-                  <Check size={44} className="text-green-400" strokeWidth={3} />
-                  <div className="absolute inset-0 rounded-full border-4 border-dashed border-yellow-500/40 scale-110 animate-spin duration-[10s]" />
-                </div>
-              </div>
-
-              <h2 className="text-2xl md:text-3xl font-extrabold font-['Sora'] tracking-tight text-white mb-2">
-                Scout Submission Complete!
-              </h2>
-              <p className="text-yellow-400 text-xs uppercase tracking-widest font-bold font-['Orbitron'] mb-6">
-                Thank you for joining our mission to bridge the digital divide
-              </p>
-              
-              <p className="text-gray-300 text-sm leading-relaxed mb-8 max-w-sm mx-auto">
-                Your school recommendation for <span className="text-white font-semibold">"{formData.schoolName}"</span> has been received and our team will review it within <b>2–3 business days</b>.
-              </p>
-
-              <div class="glass rounded-xl px-5 py-3 inline-block mb-6">
-                <p class="text-white/40 text-xs mb-1">Your Scout Reference Number</p>
-                <p id="refNumber" class="font-sora font-black text-lg text-yellow-400 tracking-widest">HD-SCOUT-B02L9-2026</p>
-              </div>
-
-              {/* Steps Progress Checklist Summary Info */}
-              <div className="bg-white/5 border border-white/5 rounded-2xl p-5 text-left space-y-4 mb-8">
-                <h4 className="text-xs uppercase font-bold tracking-wider text-white/50 mb-1">What Happens Next?</h4>
-                
-                <div className="flex gap-3 items-start">
-                  <div className="w-6 h-6 rounded-full bg-yellow-500/10 text-yellow-500 flex items-center justify-center flex-shrink-0 text-xs font-bold border border-yellow-500/20">
-                    1
+                ) : paginatedRecommendations.length === 0 ? (
+                  <div className="text-center py-12 border border-dashed border-white/5 rounded-2xl bg-white/[0.01]">
+                    <Search className="mx-auto text-white/20 mb-3" size={32} />
+                    <p className="text-white/50 text-xs">No matching recommendations found for "{searchTerm}"</p>
+                    <button 
+                      onClick={() => { setSearchTerm(''); setStatusFilter('ALL'); setCurrentPage(1); }}
+                      className="mt-3 text-xs text-green-400 hover:underline font-semibold"
+                    >
+                      Clear search & filters
+                    </button>
                   </div>
-                  <p className="text-gray-400 text-xs leading-normal">
-                    Our team reviews your school recommendation and verifies the details provided.
-                  </p>
-                </div>
+                ) : (
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse text-xs md:text-sm">
+                        <thead>
+                          <tr className="border-b border-white/5 text-[10px] uppercase font-bold tracking-wider text-white/40">
+                            <th className="py-3 pr-4">School Official Name</th>
+                            <th className="py-3 px-4">Level</th>
+                            <th className="py-3 px-4">Contact Person</th>
+                            <th className="py-3 px-4">Submitted Date</th>
+                            <th className="py-3 pl-4 text-right">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {paginatedRecommendations.map((rec) => (
+                            <tr key={rec.id || rec._id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition">
+                              <td className="py-4 pr-4 font-semibold text-emerald-50">
+                                <div>{rec.schoolName}</div>
+                                <div className="text-[10px] text-white/30 font-normal mt-0.5">{rec.schoolAddress}</div>
+                              </td>
+                              <td className="py-4 px-4 text-white/60">{rec.schoolType}</td>
+                              <td className="py-4 px-4">
+                                <div>{rec.contactPersonName}</div>
+                                <div className="text-[10px] text-white/40 font-mono mt-0.5">{rec.contactEmail}</div>
+                              </td>
+                              <td className="py-4 px-4 text-white/50 text-xs">
+                                {rec.created_at ? new Date(rec.created_at).toLocaleDateString(undefined, {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                }) : 'N/A'}
+                              </td>
+                              <td className="py-4 pl-4 text-right">
+                                <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                  rec.status === 'Approved' || rec.status === 'APPROVED'
+                                    ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+                                    : rec.status === 'Rejected' || rec.status === 'REJECTED'
+                                      ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                                      : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+                                }`}>
+                                  {rec.status || 'Pending'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
 
-                <div className="flex gap-3 items-start">
-                  <div className="w-6 h-6 rounded-full bg-yellow-500/10 text-yellow-500 flex items-center justify-center flex-shrink-0 text-xs font-bold border border-yellow-500/20">
-                    2
-                  </div>
-                  <p className="text-gray-400 text-xs leading-normal">
-                    You'll receive a confirmation email with your scout ID and onboarding materials.
-                  </p>
-                </div>
+                    {/* Pagination Controls */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-white/5 text-xs text-white/40">
+                      <div>
+                        Showing <span className="text-white/80 font-medium">{totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1}</span> to{' '}
+                        <span className="text-white/80 font-medium">{Math.min(currentPage * pageSize, totalCount)}</span> of{' '}
+                        <span className="text-white/80 font-medium">{totalCount}</span> recommendations
+                      </div>
 
-                <div className="flex gap-3 items-start">
-                  <div className="w-6 h-6 rounded-full bg-yellow-500/10 text-yellow-500 flex items-center justify-center flex-shrink-0 text-xs font-bold border border-yellow-500/20">
-                    3
-                  </div>
-                  <p className="text-gray-400 text-xs leading-normal">
-                    HolyDigits101 reaches out to the school to begin the digital literacy partnership.
-                  </p>
-                </div>
-              </div>
-
-              {/* Action Trigger Buttons */}
-              <button
-                type="button"
-                onClick={handleResetForm}
-                className="cursor-pointer w-full bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl py-3.5 flex items-center justify-center gap-2 transition transform hover:-translate-y-0.5 text-sm"
-              >
-                <PlusCircle size={16} />
-                <span>Recommend Another School</span>
-              </button>
-
-              {/* Watermark Branding Icon */}
-              <div className="mt-8 flex items-center justify-center gap-2 opacity-25">
-                <div className="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center">
-                  <span className="text-[8px] font-black text-black font-['Orbitron']">H</span>
-                </div>
-                <span className="text-white text-[10px] font-medium tracking-wide">
-                  HolyDigits101 · Digital Education Initiative
-                </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          disabled={currentPage === 1}
+                          className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs flex items-center gap-1 transition cursor-pointer"
+                        >
+                          <ChevronLeft size={14} />
+                          <span>Previous</span>
+                        </button>
+                        <span className="px-2 text-white/60 text-xs">
+                          Page {currentPage} of {totalPages}
+                        </span>
+                        <button
+                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          disabled={currentPage === totalPages}
+                          className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs flex items-center gap-1 transition cursor-pointer"
+                        >
+                          <span>Next</span>
+                          <ChevronRight size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
+
+      {/* RECOMMEND A SCHOOL MODAL FORM OVERLAY */}
+      <AnimatePresence>
+        {showRecommendModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0a0f0d] border border-green-800/30 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-white/5">
+                <div className="flex items-center gap-2">
+                  <PlusCircle className="text-yellow-500" size={22} />
+                  <div>
+                    <h3 className="font-bold text-lg font-sora text-white">Recommend School</h3>
+                    <p className="text-white/40 text-xs">Provide details for the digital computing lab eligibility review</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowRecommendModal(false)}
+                  className="text-gray-400 hover:text-white transition text-xs font-semibold px-3 py-1 bg-white/5 hover:bg-white/10 rounded-lg"
+                >
+                  Close
+                </button>
+              </div>
+
+              {/* Modal Body Form */}
+              <form onSubmit={handleRecommendSchoolSubmit} className="p-6 space-y-6 flex-1">
+                <div className="space-y-4">
+                  {/* School Official Name */}
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-widest text-white/70 uppercase mb-2">School Official Name *</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="e.g. Greenfield Model College"
+                      value={recommendForm.schoolName}
+                      onChange={e => setRecommendForm({...recommendForm, schoolName: e.target.value})}
+                      disabled={isSubmitting}
+                      className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-55 outline-none focus:border-green-600 transition-all ${recommendErrors.schoolName ? 'border-red-500' : 'border-white/10'}`}
+                    />
+                    {recommendErrors.schoolName && (
+                      <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={10} /> Valid school name required (at least 3 characters)</p>
+                    )}
+                  </div>
+
+                  {/* School Type & Relationship Role */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold tracking-widest text-white/70 uppercase mb-2">School Type *</label>
+                      <select
+                        required
+                        value={recommendForm.schoolType}
+                        onChange={e => setRecommendForm({...recommendForm, schoolType: e.target.value})}
+                        disabled={isSubmitting}
+                        className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-600 transition-all ${recommendErrors.schoolType ? 'border-red-500' : 'border-white/10'}`}
+                      >
+                        <option value="">Select type...</option>
+                        <option value="Primary">Primary Education</option>
+                        <option value="Secondary">Secondary / High School</option>
+                        <option value="Both">Combined (Primary & Secondary)</option>
+                        <option value="Tertiary">Tertiary / Vocational</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold tracking-widest text-white/70 uppercase mb-2">Your Relationship *</label>
+                      <select
+                        required
+                        value={recommendForm.contactRole}
+                        onChange={e => setRecommendForm({...recommendForm, contactRole: e.target.value})}
+                        disabled={isSubmitting}
+                        className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-600 transition-all ${recommendErrors.contactRole ? 'border-red-500' : 'border-white/10'}`}
+                      >
+                        <option value="">Select relationship...</option>
+                        <option value="Proprietor">Proprietor / Owner</option>
+                        <option value="Principal">Principal / Headmaster</option>
+                        <option value="Teacher">Academic Teacher</option>
+                        <option value="Parent">Parent / Guardian</option>
+                        <option value="Alumni">Alumni Member</option>
+                        <option value="Other">External Supporter</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* School Size Category & Knowledge Depth */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold tracking-widest text-white/70 uppercase mb-2">Estimated Student Count *</label>
+                      <select
+                        required
+                        value={recommendForm.estimatedStudents}
+                        onChange={e => setRecommendForm({...recommendForm, estimatedStudents: e.target.value})}
+                        disabled={isSubmitting}
+                        className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-600 transition-all ${recommendErrors.estimatedStudents ? 'border-red-500' : 'border-white/10'}`}
+                      >
+                        <option value="">Select population range...</option>
+                        <option value="Under 100">Fewer than 100 students</option>
+                        <option value="100 - 300">100 – 300 students</option>
+                        <option value="300 - 800">300 – 800 students</option>
+                        <option value="Above 800">More than 800 students</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold tracking-widest text-white/70 uppercase mb-2">How do you know this school? *</label>
+                      <select
+                        required
+                        value={recommendForm.schoolKnowledge}
+                        onChange={e => setRecommendForm({...recommendForm, schoolKnowledge: e.target.value})}
+                        disabled={isSubmitting}
+                        className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-600 transition-all ${recommendErrors.schoolKnowledge ? 'border-red-500' : 'border-white/10'}`}
+                      >
+                        <option value="">Select option...</option>
+                        <option value="Alumni">I'm an alumni</option>
+                        <option value="Parent">My child attends</option>
+                        <option value="Staff">I work there</option>
+                        <option value="Neighbor">I live nearby</option>
+                        <option value="Community">Community member</option>
+                        <option value="Research">Found via research</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 py-2">
+                    <div className="flex-1 h-px bg-white/5" />
+                    <span className="text-white/20 text-[9px] uppercase font-bold tracking-widest">School Contact Person</span>
+                    <div className="flex-1 h-px bg-white/5" />
+                  </div>
+
+                  {/* School Contact Person Name */}
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-widest text-white/70 uppercase mb-2">Contact Person Full Name *</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="e.g. Dr. John Doe"
+                      value={recommendForm.contactPersonName}
+                      onChange={e => setRecommendForm({...recommendForm, contactPersonName: e.target.value})}
+                      disabled={isSubmitting}
+                      className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-600 transition-all ${recommendErrors.contactPersonName ? 'border-red-500' : 'border-white/10'}`}
+                    />
+                    {recommendErrors.contactPersonName && (
+                      <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={10} /> Valid contact person name required</p>
+                    )}
+                  </div>
+
+                  {/* School Contact email & phone */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold tracking-widest text-white/70 uppercase mb-2">Contact Email Address *</label>
+                      <input 
+                        type="email" 
+                        required
+                        placeholder="e.g. principal@school.com"
+                        value={recommendForm.contactEmail}
+                        onChange={e => setRecommendForm({...recommendForm, contactEmail: e.target.value})}
+                        disabled={isSubmitting}
+                        className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-55 outline-none focus:border-green-600 transition-all ${recommendErrors.contactEmail ? 'border-red-500' : 'border-white/10'}`}
+                      />
+                      {recommendErrors.contactEmail && (
+                        <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={10} /> Valid email address required</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold tracking-widest text-white/70 uppercase mb-2">Contact Phone Number *</label>
+                      <input 
+                        type="tel" 
+                        required
+                        placeholder="e.g. +234 801 234 5678"
+                        value={recommendForm.contactPhone}
+                        onChange={e => setRecommendForm({...recommendForm, contactPhone: e.target.value})}
+                        disabled={isSubmitting}
+                        className={`w-full bg-white/5 border rounded-xl px-4 py-3.5 text-sm text-emerald-50 outline-none focus:border-green-600 transition-all ${recommendErrors.contactPhone ? 'border-red-500' : 'border-white/10'}`}
+                      />
+                      {recommendErrors.contactPhone && (
+                        <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={10} /> Contact phone number required</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 py-2">
+                    <div className="flex-1 h-px bg-white/5" />
+                    <span className="text-white/20 text-[9px] uppercase font-bold tracking-widest">School Location</span>
+                    <div className="flex-1 h-px bg-white/5" />
+                  </div>
+
+                  {/* School Address */}
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-widest text-white/70 uppercase mb-2">School Physical Address *</label>
+                    <textarea 
+                      rows={3}
+                      required
+                      placeholder="e.g. 15 Education Street, Off Airport Road, Ikeja, Lagos, Nigeria"
+                      value={recommendForm.schoolAddress}
+                      onChange={e => setRecommendForm({...recommendForm, schoolAddress: e.target.value})}
+                      disabled={isSubmitting}
+                      className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-emerald-55 outline-none focus:border-green-600 transition-all ${recommendErrors.schoolAddress ? 'border-red-500' : 'border-white/10'}`}
+                    />
+                    {recommendErrors.schoolAddress && (
+                      <p className="text-red-400 text-xs mt-1 flex items-center gap-1"><AlertCircle size={10} /> Valid physical address is required (at least 8 characters)</p>
+                    )}
+                  </div>
+
+                  {/* Optional Notes */}
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-widest text-white/40 uppercase mb-2">Additional Notes (Optional)</label>
+                    <textarea 
+                      rows={3}
+                      placeholder="Provide info on current infrastructure status, power conditions, internet access, specific challenges, etc."
+                      value={recommendForm.notes}
+                      onChange={e => setRecommendForm({...recommendForm, notes: e.target.value})}
+                      disabled={isSubmitting}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-emerald-55 outline-none focus:border-green-600 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-4 pt-4 border-t border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => setShowRecommendModal(false)}
+                    className="bg-white/5 hover:bg-white/10 text-gray-300 font-semibold rounded-xl px-6 py-3.5 text-sm transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 cursor-pointer bg-gradient-to-r from-green-700 to-green-600 hover:from-green-600 hover:to-yellow-500 text-white font-bold rounded-xl py-3.5 text-sm flex items-center justify-center gap-1 transition"
+                  >
+                    {isSubmitting ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <span>Submit Recommendation</span>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <Footer />
     </div>

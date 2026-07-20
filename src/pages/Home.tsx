@@ -3,12 +3,53 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Users, BookOpen, Coins, GraduationCap, Rocket, TrendingUp, Sparkles } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { api } from '../utils/api';
+import { useToast } from '../components/Toast';
+import RecaptchaField, { validateCaptchaToken } from '../components/RecaptchaField';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const { scrollYProgress } = useScroll();
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.9]);
+
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaResetKey, setCaptchaResetKey] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateCaptchaToken(captchaToken, toast.error)) {
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await api.subscribeNewsletter({ email, captchaToken });
+
+      if (response.success) {
+        toast.success('Thank you for subscribing to our newsletter!');
+        setEmail('');
+        setCaptchaToken(null);
+        setCaptchaResetKey((key) => key + 1);
+      } else {
+        toast.error(response.message || 'Failed to subscribe. Please try again.');
+      }
+    } catch (error: any) {
+      console.error('Error subscribing to newsletter:', error);
+      if (error.name === 'ZodError') {
+        const errorMessages = error.issues.map((err: any) => err.message).join('\n');
+        toast.error(`Validation Error:\n${errorMessages}`);
+      } else {
+        toast.error(error.message || 'An error occurred. Please try again later.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 2000);
@@ -276,7 +317,7 @@ export default function Home() {
                 title: 'Student Path',
                 description: 'Learn, build, and own your educational journey through Web3.',
                 color: 'from-blue-500 to-cyan-500',
-                // link: '/contact',
+                link: '/contact',
                 image: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=2070&auto=format&fit=crop', // University students collaborating
               },
               {
@@ -284,7 +325,7 @@ export default function Home() {
                 title: 'Become an Entrepreneur',
                 description: 'Launch and scale Web3 education ventures with us.',
                 color: 'from-emerald-500 to-teal-600',
-                // link: 'https://builders.holydigits101.com',
+                link: 'https://builders.holydigits101.com',
                 external: true,
                 featured: true,
                 image: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=2074&auto=format&fit=crop', // Modern office/entrepreneurship vibe
@@ -294,7 +335,7 @@ export default function Home() {
                 title: 'Holydigits101 Online Bootcamp',
                 description: 'Intensive digital skills training to prepare you for the global Web3 economy.',
                 color: 'from-pink-500 to-rose-500',
-                // link: '/contact',
+                link: '/contact',
                 image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop', // High quality bootcamp/tech learning image
               },
             ].map((pathway, index) => (
@@ -364,21 +405,32 @@ export default function Home() {
             <p className="text-xl text-gray-400 mb-8">
               Subscribe to our newsletter for the latest crypto news and exclusive course offers.
             </p>
-            <form className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                required
-                className="flex-1 px-6 py-4 bg-white/5 border border-white/10 rounded-full text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400/50 focus:bg-white/10 transition-all"
+            <form onSubmit={handleSubscribe} className="flex flex-col gap-4 max-w-2xl mx-auto">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 px-6 py-4 bg-white/5 border border-white/10 rounded-full text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400/50 focus:bg-white/10 transition-all"
+                />
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  disabled={submitting}
+                  type="submit"
+                  className={`px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold rounded-full hover:shadow-lg hover:shadow-yellow-500/50 transition-all ${
+                    submitting ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {submitting ? 'Subscribing...' : 'Subscribe'}
+                </motion.button>
+              </div>
+              <RecaptchaField
+                resetKey={captchaResetKey}
+                onChange={setCaptchaToken}
               />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                type="submit"
-                className="px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold rounded-full hover:shadow-lg hover:shadow-yellow-500/50 transition-all"
-              >
-                Subscribe
-              </motion.button>
             </form>
           </motion.div>
         </div>

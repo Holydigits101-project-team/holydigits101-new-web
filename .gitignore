@@ -12,3 +12,12 @@ bun.lockb.bak.bak.bak.bak
 bun.lockb.bak.bak.bak.bak.bak
 bun.lockb.bak.bak.bak.bak.bak.bak
 bun.lockb.bak.bak.bak.bak.bak.bak.bak
+sub0
+/sub0
+*.md
+.env
+.env.local
+.env.*.local
+.DS_Store
+*.DS_Store
+

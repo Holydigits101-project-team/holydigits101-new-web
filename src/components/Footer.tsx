@@ -1,8 +1,45 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail } from 'lucide-react';
+import { api } from '../utils/api';
+import { useToast } from './Toast';
+import { useRecaptcha, validateCaptchaToken } from './RecaptchaField';
 
 export default function Footer() {
+  const { toast } = useToast();
+  const { getToken } = useRecaptcha();
+  const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const captchaToken = await getToken('newsletter');
+      if (!validateCaptchaToken(captchaToken, toast.error)) return;
+
+      const response = await api.subscribeNewsletter({ email, captchaToken });
+
+      if (response.success) {
+        toast.success('Thank you for subscribing to our newsletter!');
+        setEmail('');
+      } else {
+        toast.error(response.message || 'Failed to subscribe. Please try again.');
+      }
+    } catch (error: any) {
+      console.error('Error subscribing to newsletter:', error);
+      if (error.name === 'ZodError') {
+        const errorMessages = error.issues.map((err: any) => err.message).join('\n');
+        toast.error(`Validation Error:\n${errorMessages}`);
+      } else {
+        toast.error(error.message || 'An error occurred. Please try again later.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const quickLinks = [
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
@@ -36,8 +73,8 @@ export default function Footer() {
               </div> */}
               <div className="ml-[5rem!important] relative w-12 h-12 rounded-full flex items-center justify-center">
                 <img src="https://storage.lingoql.com/holydigits101/logo-main.png" ></img>
-                <div class="ml-[5px] md:block">
-                  <span class="text-white font-['Orbitron'] text-xl font-bold tracking-wider">HOLY<span class="text-yellow-400">DIGITS</span>101</span>
+                <div className="ml-[5px] md:block">
+                  <span className="text-white font-['Orbitron'] text-xl font-bold tracking-wider">HOLY<span className="text-yellow-400">DIGITS</span>101</span>
                 </div>
               </div>
             </Link>
@@ -99,19 +136,26 @@ export default function Footer() {
             <p className="text-gray-400 text-sm mb-4">
               Subscribe to our newsletter for the latest updates.
             </p>
-            <form className="space-y-3">
+            <form onSubmit={handleSubscribe} className="space-y-3">
               <input
                 type="email"
+                required
                 placeholder="Your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400/50 focus:bg-white/10 transition-all"
               />
+
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                disabled={submitting}
                 type="submit"
-                className="w-full px-4 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-semibold rounded-lg hover:shadow-lg hover:shadow-yellow-500/50 transition-all"
+                className={`w-full px-4 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-semibold rounded-lg hover:shadow-lg hover:shadow-yellow-500/50 transition-all ${
+                  submitting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                Subscribe
+                {submitting ? 'Subscribing...' : 'Subscribe'}
               </motion.button>
             </form>
           </div>
