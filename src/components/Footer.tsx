@@ -4,22 +4,17 @@ import { motion } from 'framer-motion';
 import { Mail } from 'lucide-react';
 import { api } from '../utils/api';
 import { useToast } from './Toast';
-import { useRecaptcha, validateCaptchaToken } from './RecaptchaField';
-
 export default function Footer() {
   const { toast } = useToast();
-  const { getToken } = useRecaptcha();
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setSubmitting(true);
     try {
-      const captchaToken = await getToken('newsletter');
-      if (!validateCaptchaToken(captchaToken, toast.error)) return;
-
-      const response = await api.subscribeNewsletter({ email, captchaToken });
+      const response = await api.subscribeNewsletter({ email });
 
       if (response.success) {
         toast.success('Thank you for subscribing to our newsletter!');
@@ -145,7 +140,6 @@ export default function Footer() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400/50 focus:bg-white/10 transition-all"
               />
-
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

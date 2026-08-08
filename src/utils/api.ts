@@ -26,8 +26,6 @@ export const allowedRoles = [
 
 export type AllowedRole = typeof allowedRoles[number];
 
-const captchaTokenSchema = z.string().min(1, 'Captcha verification is required');
-
 export const waitlistSchema = z.object({
   fullName: z.string()
     .min(2, 'Full Name must be at least 2 characters long')
@@ -44,7 +42,6 @@ export const waitlistSchema = z.object({
   preferredDate: z.string().min(1, 'Preferred date is required'),
   preferredTime: z.string().min(1, 'Preferred time slot is required'),
   selectedRoles: z.array(z.enum(allowedRoles)).min(1, 'Please select at least one role'),
-  captchaToken: captchaTokenSchema,
 });
 
 export const contactSchema = z.object({
@@ -56,13 +53,11 @@ export const contactSchema = z.object({
   message: z.string()
     .min(5, 'Message must be at least 5 characters long')
     .max(5000, 'Message is too long (max 5000 characters)'),
-  captchaToken: captchaTokenSchema,
 });
 
 export const newsletterSchema = z.object({
   email: z.email('Invalid email address')
     .max(255, 'Email must be under 255 characters'),
-  captchaToken: captchaTokenSchema,
 });
 
 export const partnershipSchema = z.object({
@@ -87,7 +82,6 @@ export const partnershipSchema = z.object({
       type: z.string(),
     })
   ).optional().default([]),
-  captchaToken: captchaTokenSchema,
 });
 
 export const scoutRegisterSchema = z.object({
@@ -253,10 +247,11 @@ export const api = {
     });
   },
 
-  sendScoutOtp: async (email: string, captchaToken: string) => {
+  // Scout Authentications
+  sendScoutOtp: async (email: string) => {
     return request<{ success: boolean; message: string; data?: { id?: string; email: string } }>('/scout-send-otp', {
       method: 'POST',
-      body: JSON.stringify({ email, captchaToken }),
+      body: JSON.stringify({ email }),
     });
   },
 

@@ -5,11 +5,9 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { api } from '../utils/api';
 import { useToast } from '../components/Toast';
-import { useRecaptcha, validateCaptchaToken } from '../components/RecaptchaField';
 
 export default function Contact() {
   const { toast } = useToast();
-  const { getToken } = useRecaptcha();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -17,12 +15,10 @@ export default function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setSubmitting(true);
     try {
-      const captchaToken = await getToken('contact');
-      if (!validateCaptchaToken(captchaToken, toast.error)) return;
-
-      const response = await api.submitContact({ name, email, message, captchaToken });
+      const response = await api.submitContact({ name, email, message });
 
       if (response.success) {
         toast.success('Message sent successfully! We will get back to you shortly.');
@@ -48,13 +44,14 @@ export default function Contact() {
   return (
     <div className="bg-black min-h-screen">
       <Navbar />
+      
+      <section className="relative py-24 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-600/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-      <section className="relative pt-32 pb-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-yellow-900/20 via-transparent to-transparent"></div>
-        
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-16"
           >
@@ -93,11 +90,11 @@ export default function Contact() {
             </motion.div>
 
             <motion.form
-              onSubmit={handleSubmit}
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="space-y-6"
+              transition={{ delay: 0.2 }}
+              onSubmit={handleSubmit}
+              className="space-y-6 bg-white/[0.02] border border-white/5 rounded-2xl p-8 backdrop-blur-xl"
             >
               <div>
                 <input
@@ -129,7 +126,6 @@ export default function Contact() {
                   className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400/50 transition-all resize-none"
                 ></textarea>
               </div>
-
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

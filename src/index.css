@@ -273,7 +273,3 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   width: 48px!important;
   height: 48px!important;
 }
-
-.g-captcha > div > div{
-  margin: auto!important;
-}

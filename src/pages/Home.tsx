@@ -5,7 +5,6 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { api } from '../utils/api';
 import { useToast } from '../components/Toast';
-import RecaptchaField, { validateCaptchaToken } from '../components/RecaptchaField';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
@@ -15,26 +14,18 @@ export default function Home() {
 
   const { toast } = useToast();
   const [email, setEmail] = useState('');
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateCaptchaToken(captchaToken, toast.error)) {
-      return;
-    }
-
     setSubmitting(true);
     try {
-      const response = await api.subscribeNewsletter({ email, captchaToken });
+      const response = await api.subscribeNewsletter({ email });
 
       if (response.success) {
         toast.success('Thank you for subscribing to our newsletter!');
         setEmail('');
-        setCaptchaToken(null);
-        setCaptchaResetKey((key) => key + 1);
       } else {
         toast.error(response.message || 'Failed to subscribe. Please try again.');
       }
@@ -427,10 +418,6 @@ export default function Home() {
                   {submitting ? 'Subscribing...' : 'Subscribe'}
                 </motion.button>
               </div>
-              <RecaptchaField
-                resetKey={captchaResetKey}
-                onChange={setCaptchaToken}
-              />
             </form>
           </motion.div>
         </div>

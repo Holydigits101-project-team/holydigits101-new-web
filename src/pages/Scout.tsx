@@ -26,7 +26,6 @@ import Footer from '../components/Footer';
 import { countryRegions, countries } from '@/data/countryRegions';
 import { api } from '../utils/api';
 import { useToast } from '../components/Toast';
-import { useRecaptcha, validateCaptchaToken } from '../components/RecaptchaField';
 
 type PortalState = 'EMAIL_ENTRY' | 'OTP_VERIFY' | 'PROFILE_REGISTER' | 'DASHBOARD';
 
@@ -35,7 +34,6 @@ let globalVerificationInitiated = false;
 
 export default function Scout() {
   const { toast } = useToast();
-  const { getToken } = useRecaptcha();
   
   // Navigation & Page State
   const [portalState, setPortalState] = useState<PortalState>('EMAIL_ENTRY');
@@ -273,15 +271,10 @@ export default function Scout() {
       toast.error('Please enter a valid email address.');
       return;
     }
-    setIsSubmitting(true);
     try {
-      const captchaToken = await getToken('scout_otp');
-      if (!validateCaptchaToken(captchaToken, toast.error)) {
-        setIsSubmitting(false);
-        return;
-      }
+      setIsSubmitting(true);
 
-      const res = await api.sendScoutOtp(email.trim(), captchaToken);
+      const res = await api.sendScoutOtp(email.trim());
       if (res.success) {
         toast.success('Verification code sent to your email!');
         setPortalState('OTP_VERIFY');

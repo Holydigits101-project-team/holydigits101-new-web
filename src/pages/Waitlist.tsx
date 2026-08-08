@@ -6,7 +6,6 @@ import Footer from '@/components/Footer';
 import { api, AllowedRole } from '../utils/api';
 import { useToast } from '../components/Toast';
 import { Modal } from '../components/Modal';
-import { useRecaptcha, validateCaptchaToken } from '../components/RecaptchaField';
 
 
 
@@ -69,7 +68,6 @@ function Waitlist() {
   const [selectedCountryCode, setSelectedCountryCode] = useState(countries.find(c => c.name === 'Nigeria') || countries[0]);
   const [expandedDepts, setExpandedDepts] = useState<number[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<AllowedRole[]>([]);
-  const { getToken } = useRecaptcha();
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -122,30 +120,28 @@ function Waitlist() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!agreedToTerms) {
+      toast.error('Please agree to the Terms & Conditions');
+      return;
+    }
+
+    const payload = {
+      fullName: formData.fullName,
+      email: formData.email,
+      country: formData.country,
+      region: formData.region,
+      phone: `${selectedCountryCode.code} ${formData.phone}`,
+      postalCode: formData.postalCode,
+      motivation: formData.motivation,
+      preferredDate: formData.preferredDate,
+      preferredTime: formData.preferredTime,
+      selectedRoles,
+    };
+
     setSubmitting(true);
     try {
-      const captchaToken = await getToken('waitlist');
-      if (!validateCaptchaToken(captchaToken, toast.error)) return;
-
-      const payload = {
-        fullName: formData.fullName,
-        email: formData.email,
-        country: formData.country,
-        region: formData.region,
-        phone: `${selectedCountryCode.code} ${formData.phone}`,
-        postalCode: formData.postalCode,
-        motivation: formData.motivation,
-        preferredDate: formData.preferredDate,
-        preferredTime: formData.preferredTime,
-        selectedRoles,
-        captchaToken,
-      };
-
-      if (!agreedToTerms) {
-        toast.error('Please agree to the Terms & Conditions');
-        return;
-      }
-
+      // Validate schema client-side first using Zod
       const response = await api.submitWaitlist(payload);
 
       if (response.success) {
@@ -167,7 +163,6 @@ function Waitlist() {
       } else {
         toast.error(response.message || 'Failed to submit application. Please try again.');
       }
-
     } catch (error: any) {
       console.error('Error submitting form:', error);
       if (error.name === 'ZodError') {
@@ -599,8 +594,6 @@ function Waitlist() {
 
                 {/* Final Section */}
                 <div className={`border-t pt-8 space-y-6 ${darkMode ? 'border-yellow-500/10' : 'border-gray-200'}`}>
-                  {/* Captcha */}
-
 
                   {/* Terms Checkbox */}
                   <label className="flex items-start space-x-3 cursor-pointer group">

@@ -12,14 +12,12 @@ import { useMemo, useState } from 'react';
 
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { useRecaptcha, validateCaptchaToken } from '../components/RecaptchaField';
 import { useToast } from '../components/Toast';
 import { api, partnershipSchema } from '../utils/api';
 
 export default function Partnership() {
   const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
-  const { getToken } = useRecaptcha();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -271,9 +269,6 @@ export default function Partnership() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const captchaToken = await getToken('partnership');
-    if (!validateCaptchaToken(captchaToken, toast.error)) return;
-
     const targetForm = e.currentTarget;
     const formData = new FormData(targetForm);
 
@@ -285,7 +280,6 @@ export default function Partnership() {
       country: formData.get('country') as string || '',
       partnershipType: formData.get('partnershipType') as string || '',
       proposal: formData.get('proposal') as string || '',
-      captchaToken,
     };
 
     setSubmitting(true);
@@ -309,7 +303,6 @@ export default function Partnership() {
         country: parsedData.country,
         partnershipType: parsedData.partnershipType,
         proposal: parsedData.proposal,
-        captchaToken: parsedData.captchaToken,
       });
 
       if (response.success && response.data?.id) {
@@ -685,8 +678,6 @@ export default function Partnership() {
                   </div>
                 )}
               </div>
-
-
 
               {/* Terms */}
               <div className="flex items-start space-x-3">
