@@ -61,7 +61,7 @@ export default function Scout() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 1;
+  const pageSize = 20;
 
   // Debounce: wait 400ms after user stops typing before firing the fetch
   useEffect(() => {
