@@ -352,14 +352,7 @@ export default function Scout() {
       const res = await api.submitScoutRecommendation(recommendForm);
       if (res.success) {
         toast.success('Recommendation submitted successfully.');
-        const recsRes = await api.getScoutRecommendations();
-        if (recsRes.success && recsRes.data) {
-          const rawData = recsRes.data;
-          const list = Array.isArray(rawData)
-            ? (rawData[0]?.recommendations || [])
-            : ((rawData as any)?.recommendations || []);
-          setRecommendations(list);
-        }
+        await fetchRecommendations();
         // Reset school recommendation form states
         setRecommendForm({
           schoolName: '',
